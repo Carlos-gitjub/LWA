@@ -1,0 +1,39 @@
+name: Run PHPUnit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - run: composer install
+      - run: cp .env.example .env
+      - run: php artisan key:generate
+      - run: php artisan migrate --env=testing
+      - run: vendor/bin/phpunit
+
+    # Notificación por email si falla
+    if: failure()
+    steps:
+      - name: Send email on failure
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ PHPUnit Tests Failed en Laravel App"
+          to: carlosantonps@gmail.com
+          from: Laravel CI/CD
+          body: |
+            Los tests de PHPUnit han fallado.
+            Revisa los resultados del pipeline en GitHub Actions.
