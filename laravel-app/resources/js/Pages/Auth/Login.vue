@@ -27,6 +27,10 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
+
+const redirectToGoogle = () => {
+    window.location.href = '/auth/google';
+};
 </script>
 
 <template>
@@ -105,8 +109,8 @@ const submit = () => {
 
         <button
             type="button"
-            @click="router.visit('/auth/google')"
-            class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            @click="redirectToGoogle"
+            class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
             <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M21.35 11.1H12v2.8h5.4c-.2 1.5-1.6 4.3-5.4 4.3-3.2 0-5.9-2.7-5.9-6s2.7-6 5.9-6c1.8 0 3 .7 3.7 1.3l2.5-2.4C17.5 3.9 15 3 12 3 6.5 3 2 7.5 2 13s4.5 10 10 10c5.7 0 9.5-4 9.5-9.5 0-.7-.1-1.3-.2-1.9z"/>
@@ -116,7 +120,6 @@ const submit = () => {
             </svg>
             Log in with Google
         </button>
-
 
     </GuestLayout>
 </template>
