@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\MoviesStreamingController;
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -30,5 +31,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
+
+Route::get('/movies-streaming', [MoviesStreamingController::class, 'index'])->name('movies.streaming');
 
 require __DIR__.'/auth.php';
