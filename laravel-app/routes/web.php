@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MoviesStreamingController;
+use App\Http\Controllers\MovieSearchController;
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -33,5 +34,7 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/movies-streaming', [MoviesStreamingController::class, 'index'])->name('movies.streaming');
+
+Route::post('/movies-streaming/search', [MovieSearchController::class, 'search']);
 
 require __DIR__.'/auth.php';

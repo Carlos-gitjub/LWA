@@ -41,5 +41,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'tmdb' => [
+        'key' => env('TMDB_API_KEY'),
+    ],
+
+    'watchmode' => [
+        'key' => env('WATCHMODE_API_KEY'),
+    ],
 
 ];
