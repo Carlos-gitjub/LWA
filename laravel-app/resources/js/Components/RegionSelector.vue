@@ -1,9 +1,9 @@
 <template>
   <div class="relative">
-    <label class="text-sm font-medium block mb-1">🌍 Region:</label>
+    
 
     <button
-      class="flex items-center gap-2 border rounded px-3 py-2 w-full sm:w-auto hover:bg-gray-100 transition"
+      class="flex items-center gap-2 border rounded px-3 py-2 w-auto hover:bg-gray-100 transition"
       @click="open = !open"
       type="button"
     >

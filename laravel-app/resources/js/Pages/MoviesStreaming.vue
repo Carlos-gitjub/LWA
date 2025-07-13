@@ -3,29 +3,42 @@
     <div class="max-w-4xl mx-auto p-6">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold">Where to watch?</h1>
-        <Link href="/where-to-watch/advanced" class="text-blue-600 hover:underline">
-          Advanced options
-        </Link>
+<Link
+  href="/where-to-watch/advanced"
+  class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition"
+>
+  <!-- Replace this icon block with either option -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="3" y="5" width="18" height="2.5" rx="1" />
+    <rect x="3" y="10.75" width="18" height="2.5" rx="1" />
+    <rect x="3" y="16.5" width="18" height="2.5" rx="1" />
+  </svg>
+  Advanced options
+</Link>
       </div>
 
-      <form @submit.prevent="searchMovie" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="e.g. Inception"
-          v-model="search"
-          class="flex-1 border rounded px-4 py-2 shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-        />
+      <form @submit.prevent="searchMovie" class="w-full mb-6">
+        <div class="flex w-full max-w-full">
+          <input
+            type="text"
+            placeholder="e.g. Inception"
+            v-model="search"
+            class="flex-grow border rounded-l px-4 py-2 shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-r hover:bg-blue-700 transition"
+          >
+            🔍 Search
+          </button>
+        </div>
 
-        <RegionSelector v-model="region" />
-
-        <button
-          type="submit"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition whitespace-nowrap"
-        >
-          🔍 Search
-        </button>
+        <div class="flex items-center gap-2 mt-4">
+          <span class="text-sm font-medium text-gray-700">🌍 Region:</span>
+          <RegionSelector v-model="region" />
+        </div>
       </form>
-
+   
       <div>
         <div v-if="loading" class="text-gray-600 italic">Searching...</div>
         <div v-else-if="error" class="text-red-600">{{ error }}</div>
@@ -67,6 +80,7 @@ import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
 import RegionSelector from '@/Components/RegionSelector.vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+
 
 const search = ref('')
 const region = ref('ES') // Valor por defecto
