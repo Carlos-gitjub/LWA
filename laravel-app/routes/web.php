@@ -37,4 +37,8 @@ Route::get('/movies-streaming', [MoviesStreamingController::class, 'index'])->na
 
 Route::post('/movies-streaming/search', [MovieSearchController::class, 'search']);
 
+Route::get('/movies-streaming/advanced', function () {
+    return Inertia::render('MoviesStreaming/Advanced');
+})->name('movies.streaming.advanced');
+
 require __DIR__.'/auth.php';

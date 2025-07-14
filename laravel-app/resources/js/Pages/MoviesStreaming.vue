@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold">Where to watch?</h1>
 <Link
-  href="/where-to-watch/advanced"
+  href="/movies-streaming/advanced"
   class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition"
 >
   <!-- Replace this icon block with either option -->
