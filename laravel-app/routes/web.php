@@ -2,13 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\GoogleController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MoviesStreamingController;
-use App\Http\Controllers\MovieSearchController;
-use App\Http\Controllers\SubscriptionMostController;
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -35,25 +32,15 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/movies-streaming', [MoviesStreamingController::class, 'index'])->name('movies.streaming');
-
-Route::post('/movies-streaming/search', [MovieSearchController::class, 'search']);
-
-Route::get('/movies-streaming/advanced', function () {
-    return Inertia::render('MoviesStreaming/Advanced');
-})->name('movies.streaming.advanced');
-
-Route::get('/movies-streaming/advanced/subscription-most', [SubscriptionMostController::class, 'index'])
-    ->middleware(['auth'])
+Route::get('/movies-streaming/advanced', fn () => Inertia::render('MoviesStreaming/Advanced'))->name('movies.streaming.advanced');
+Route::get('/movies-streaming/advanced/subscription-most', [MoviesStreamingController::class, 'advancedSubscriptionMost'])
+    ->middleware('auth')
     ->name('subscription.most');
 
-Route::post('/api/movies/search-title', [MovieSearchController::class, 'searchByTitle']);
-
-Route::post('/movies-streaming/analyze-subscription-platforms', [SubscriptionMostController::class, 'analyze'])
-    ->middleware(['auth'])
-    ->name('subscription.analyze');
-
-Route::post('/movies-streaming/advanced/subscription-most/analyze', [SubscriptionMostController::class, 'analyze'])
-    ->middleware(['auth'])
+Route::post('/movies-streaming/search', [MoviesStreamingController::class, 'search']);
+Route::post('/api/movies/search-title', [MoviesStreamingController::class, 'searchByTitle']);
+Route::post('/movies-streaming/advanced/subscription-most/analyze', [MoviesStreamingController::class, 'analyzeSubscription'])
+    ->middleware('auth')
     ->name('subscription.most.analyze');
     
 

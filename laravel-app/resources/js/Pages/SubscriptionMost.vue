@@ -120,6 +120,7 @@ const movieList = ref([])
 const error = ref(null)
 const region = ref('ES')
 const platformResults = ref({})
+const isAnalyzed = ref(false)
 
 // Buscar película por nombre
 const searchMovie = async () => {
@@ -155,8 +156,6 @@ const addMovie = () => {
     search.value = ''
   }
 }
-
-const isAnalyzed = ref(false)
 
 const analyzePlatforms = async () => {
   try {

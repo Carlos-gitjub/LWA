@@ -8,8 +8,9 @@ class WatchmodeApiService
 {
     protected string $apiKey;
 
-    public function __construct()
-    {
+    public function __construct(
+        protected TmdbApiService $tmdb
+    ) {
         $this->apiKey = config('services.watchmode.key');
     }
 
@@ -36,25 +37,18 @@ class WatchmodeApiService
 
     public function getStreamingPlatforms(int $tmdbId, string $region): array
     {
-        // Obtener el IMDb ID a partir del ID de TMDb
-        $tmdbService = app(TmdbApiService::class);
-        $imdbId = $tmdbService->getImdbId($tmdbId);
-
+        $imdbId = $this->tmdb->getImdbId($tmdbId);
         if (!$imdbId) {
             return [];
         }
 
-        // Buscar el ID de Watchmode
         $watchmodeTitle = $this->searchByImdb($imdbId);
-
         if (!$watchmodeTitle || !isset($watchmodeTitle['id'])) {
             return [];
         }
 
-        // Obtener las fuentes (plataformas)
         $sources = $this->getSources($watchmodeTitle['id'], $region);
 
-        // Filtrar por tipo de acceso: solo suscripción
         $subscriptionPlatforms = collect($sources)
             ->filter(fn($s) => $s['type'] === 'sub')
             ->pluck('name')
