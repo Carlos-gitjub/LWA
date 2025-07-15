@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MovieSearchRequest;
-use App\Services\MovieSearchService;
-use App\Services\WatchmodeApiService;
+use App\Services\MoviesStreamingCoordinatorService;
 use App\Services\TmdbApiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,9 +23,9 @@ class MoviesStreamingController extends Controller
     }
 
     // Búsqueda simple: plataformas por título
-    public function search(MovieSearchRequest $request, MovieSearchService $service)
+    public function search(MovieSearchRequest $request, MoviesStreamingCoordinatorService $service)
     {
-        $platforms = $service->search($request->title, $request->region);
+        $platforms = $service->getStreamingPlatformsForTitle($request->title, $request->region);
         return response()->json($platforms);
     }
 
@@ -52,32 +51,14 @@ class MoviesStreamingController extends Controller
         ]);
     }
 
-    // Análisis de plataformas de suscripción más frecuentes
-    public function analyzeSubscription(Request $request, WatchmodeApiService $watchmode)
+    public function analyzeSubscription(Request $request, MoviesStreamingCoordinatorService $service)
     {
         $movies = $request->input('movies');
         $region = $request->input('region', 'ES');
     
-        $result = [];
-
-        foreach ($movies as $movie) {
-            $tmdbId = $movie['id'];
-            $title = $movie['title'];
-            $year = $movie['year'];
-
-            $platforms = $watchmode->getStreamingPlatforms($tmdbId, $region);
-
-            foreach ($platforms as $platform) {
-                $result[$platform][] = "{$title} ({$year})";
-            }
-        }
-
-        // Ordenar por cantidad de títulos por plataforma
-        $sorted = collect($result)
-            ->map(fn($movies) => ['count' => count($movies), 'movies' => $movies])
-            ->sortByDesc('count')
-            ->all();
-
-        return response()->json($sorted);
+        $result = $service->getSubscriptionPlatformsFromList($movies, $region);
+    
+        return response()->json($result);
     }
+    
 }

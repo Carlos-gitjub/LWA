@@ -4,14 +4,14 @@ namespace App\Services;
 use App\Services\WatchmodeApiService;
 use App\Services\TmdbApiService;
 
-class MovieSearchService
+class MoviesStreamingCoordinatorService
 {
     public function __construct(
         protected TmdbApiService $tmdb,
         protected WatchmodeApiService $watchmode
     ) {}
 
-    public function search(string $title, string $region): array
+    public function getStreamingPlatformsForTitle(string $title, string $region): array
     {
         $tmdbResult = $this->tmdb->searchMovie($title);
         if (!$tmdbResult) return [];
@@ -36,4 +36,27 @@ class MovieSearchService
             ];
         })->values()->all();
     }
+
+    public function getSubscriptionPlatformsFromList(array $movies, string $region): array
+    {
+        $platformMovieMap = [];
+
+        foreach ($movies as $movie) {
+            $tmdbId = $movie['id'];
+            $title = $movie['title'];
+            $year = $movie['year'];
+
+            $platforms = $this->watchmode->getStreamingPlatforms($tmdbId, $region);
+
+            foreach ($platforms as $platform) {
+                $platformMovieMap[$platform][] = "{$title} ({$year})";
+            }
+        }
+
+        return collect($platformMovieMap)
+            ->map(fn($movies) => ['count' => count($movies), 'movies' => $movies])
+            ->sortByDesc('count')
+            ->all();
+    }
+
 }
