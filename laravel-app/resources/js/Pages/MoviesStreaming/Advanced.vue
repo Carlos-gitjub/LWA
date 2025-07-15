@@ -2,8 +2,19 @@
   <AuthenticatedLayout>
     <div class="pt-10">
       <div class="max-w-xl mx-auto px-4 text-center">
-        <h1 class="text-3xl font-bold mb-10 text-gray-900">Advanced Options</h1>
+        
+        <!-- Título + enlace de regreso -->
+        <div class="flex items-center justify-between mb-10">
+          <h1 class="text-3xl font-bold text-gray-900">Advanced Options</h1>
+          <Link
+            href="/movies-streaming"
+            class="text-sm text-blue-600 hover:underline"
+          >
+            ← Back to basic search 
+          </Link>
+        </div>
 
+        <!-- Opción avanzada -->
         <div class="flex justify-center">
           <Link
             href="/movies-streaming/advanced/subscription-most"
@@ -19,10 +30,12 @@
             </div>
           </Link>
         </div>
+
       </div>
     </div>
   </AuthenticatedLayout>
 </template>
+
 
 <script setup>
 import { Link } from '@inertiajs/vue3'
