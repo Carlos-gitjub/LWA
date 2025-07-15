@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\MoviesStreamingController;
 use App\Http\Controllers\MovieSearchController;
+use App\Http\Controllers\SubscriptionMostController;
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -40,5 +41,9 @@ Route::post('/movies-streaming/search', [MovieSearchController::class, 'search']
 Route::get('/movies-streaming/advanced', function () {
     return Inertia::render('MoviesStreaming/Advanced');
 })->name('movies.streaming.advanced');
+
+Route::get('/movies-streaming/advanced/subscription-most', [SubscriptionMostController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('subscription.most');
 
 require __DIR__.'/auth.php';

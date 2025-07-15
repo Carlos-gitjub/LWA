@@ -6,7 +6,7 @@
 
         <div class="flex justify-center">
           <Link
-            href="/where-to-watch/advanced/subscription-most"
+            href="/movies-streaming/advanced/subscription-most"
             class="group block max-w-md w-full p-6 bg-white border border-blue-200 rounded-xl shadow-sm hover:shadow-lg hover:border-blue-400 transition duration-300 ease-in-out transform hover:scale-[1.02]"
           >
             <div class="flex items-center justify-center gap-3">
