@@ -46,4 +46,6 @@ Route::get('/movies-streaming/advanced/subscription-most', [SubscriptionMostCont
     ->middleware(['auth'])
     ->name('subscription.most');
 
+Route::post('/api/movies/search-title', [MovieSearchController::class, 'searchByTitle']);
+
 require __DIR__.'/auth.php';
