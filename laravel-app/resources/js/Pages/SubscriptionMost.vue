@@ -39,6 +39,7 @@
           </div>
 
           <button
+            @click="analyzePlatforms"
             class="hidden md:inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
           >
             Search subscription platforms
@@ -67,7 +68,20 @@
           </div>
         </div>
 
+        <div v-if="Object.keys(platformResults).length" class="mt-8 space-y-6">
+          <h2 class="text-xl font-semibold text-gray-800">
+            📺 Subscription Platforms ({{ region }})
+          </h2>
 
+          <div v-for="(data, platform) in platformResults" :key="platform" class="bg-white rounded border shadow p-4">
+            <h3 class="text-blue-700 font-bold mb-2">{{ platform }} ({{ data.count }} titles)</h3>
+            <ul class="list-disc pl-5 text-gray-700">
+              <li v-for="(movie, index) in data.movies" :key="index">
+                {{ movie }}
+              </li>
+            </ul>
+          </div>
+        </div>
 
       </div>
 
@@ -89,6 +103,7 @@ const searchResult = ref(null)
 const movieList = ref([])
 const error = ref(null)
 const region = ref('ES')
+const platformResults = ref({})
 
 // Buscar película por nombre
 const searchMovie = async () => {
@@ -124,4 +139,18 @@ const addMovie = () => {
     search.value = ''
   }
 }
+
+const analyzePlatforms = async () => {
+  try {
+    const response = await axios.post('/movies-streaming/advanced/subscription-most/analyze', {
+      movies: movieList.value,
+      region: region.value
+    })
+
+    platformResults.value = response.data
+  } catch (e) {
+    console.error('Error analyzing platforms:', e)
+  }
+}
+
 </script>

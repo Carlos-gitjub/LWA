@@ -48,4 +48,13 @@ Route::get('/movies-streaming/advanced/subscription-most', [SubscriptionMostCont
 
 Route::post('/api/movies/search-title', [MovieSearchController::class, 'searchByTitle']);
 
+Route::post('/movies-streaming/analyze-subscription-platforms', [SubscriptionMostController::class, 'analyze'])
+    ->middleware(['auth'])
+    ->name('subscription.analyze');
+
+Route::post('/movies-streaming/advanced/subscription-most/analyze', [SubscriptionMostController::class, 'analyze'])
+    ->middleware(['auth'])
+    ->name('subscription.most.analyze');
+    
+
 require __DIR__.'/auth.php';
