@@ -1,3 +1,50 @@
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+import { Link } from '@inertiajs/vue3'
+import RegionSelector from '@/Components/RegionSelector.vue'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+
+
+const search = ref('')
+const region = ref('ES') // Valor por defecto
+const results = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+const label = (type) => {
+  switch (type) {
+    case 'sub': return 'Subscription'
+    case 'rent': return 'Rental'
+    case 'buy': return 'Purchase'
+    default: return type
+  }
+}
+
+
+const searchMovie = async () => {
+  if (!search.value.trim()) return
+
+  loading.value = true
+  error.value = null
+  results.value = []
+
+  try {
+    const response = await axios.post('/movies-streaming/search', {
+      title: search.value,
+      region: region.value
+    })
+    results.value = response.data
+  } catch (err) {
+    error.value = 'Error fetching movie data.'
+    console.error(err)
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+
 <template>
   <AuthenticatedLayout>
     <div class="max-w-4xl mx-auto p-6">
@@ -73,49 +120,3 @@
     </div>
   </AuthenticatedLayout>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { Link } from '@inertiajs/vue3'
-import RegionSelector from '@/Components/RegionSelector.vue'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-
-
-const search = ref('')
-const region = ref('ES') // Valor por defecto
-const results = ref([])
-const loading = ref(false)
-const error = ref(null)
-
-const label = (type) => {
-  switch (type) {
-    case 'sub': return 'Subscription'
-    case 'rent': return 'Rental'
-    case 'buy': return 'Purchase'
-    default: return type
-  }
-}
-
-
-const searchMovie = async () => {
-  if (!search.value.trim()) return
-
-  loading.value = true
-  error.value = null
-  results.value = []
-
-  try {
-    const response = await axios.post('/movies-streaming/search', {
-      title: search.value,
-      region: region.value
-    })
-    results.value = response.data
-  } catch (err) {
-    error.value = 'Error fetching movie data.'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-}
-</script>

@@ -1,37 +1,6 @@
-<template>
-  <div class="relative">
-    
-
-    <button
-      class="flex items-center gap-2 border rounded px-3 py-2 w-auto hover:bg-gray-100 transition"
-      @click="open = !open"
-      type="button"
-    >
-      <img :src="flagUrl(modelValue)" :alt="modelValue" class="w-6 h-auto" />
-      <span>{{ emojiFor(modelValue) }}</span>
-    </button>
-
-    <div
-      v-if="open"
-      class="absolute z-50 mt-2 bg-white border rounded shadow-md w-48"
-    >
-      <ul>
-        <li
-          v-for="r in regions"
-          :key="r.code"
-          @click="selectRegion(r.code)"
-          class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-        >
-          <img :src="flagUrl(r.code)" :alt="r.code" class="w-5 h-auto" />
-          {{ r.emoji }}
-        </li>
-      </ul>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+
 const props = defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
 
@@ -52,4 +21,54 @@ const flagUrl = code =>
 
 const emojiFor = code =>
   regions.find(r => r.code === code)?.emoji || ''
+
+const dropdownRef = ref(null)
+
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    open.value = false
+  }
+}
+
+watch(open, (value) => {
+  if (value) {
+    document.addEventListener('click', handleClickOutside)
+  } else {
+    document.removeEventListener('click', handleClickOutside)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
+
+<template>
+  <div class="relative" ref="dropdownRef">
+    <button
+      class="flex items-center gap-2 border rounded px-3 py-2 w-auto hover:bg-gray-100 transition"
+      @click="open = !open"
+      type="button"
+    >
+      <img :src="flagUrl(modelValue)" :alt="modelValue" class="w-6 h-auto" />
+      <span>{{ emojiFor(modelValue) }}</span>
+    </button>
+
+    <div
+      v-if="open"
+      class="absolute z-50 mt-2 bg-white border rounded shadow-md w-24"
+    >
+      <ul>
+        <li
+          v-for="r in regions"
+          :key="r.code"
+          @click="selectRegion(r.code)"
+          class="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+        >
+          <img :src="flagUrl(r.code)" :alt="r.code" class="w-5 h-auto" />
+          {{ r.emoji }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>

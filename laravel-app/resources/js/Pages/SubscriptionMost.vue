@@ -1,3 +1,84 @@
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+import { Link } from '@inertiajs/vue3'
+import RegionSelector from '@/Components/RegionSelector.vue'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+
+const search = ref('')
+const searchResult = ref(null)
+const movieList = ref([])
+const error = ref(null)
+const region = ref('ES')
+const platformResults = ref({})
+const isAnalyzed = ref(false)
+const isSearching = ref(false)
+const isAnalyzing = ref(false)
+const openPlatforms = ref({})
+
+const searchMovie = async () => {
+  if (!search.value.trim()) return
+  error.value = null
+  searchResult.value = null
+  isSearching.value = true
+
+  try {
+    const response = await axios.post('/api/movies/search-title', {
+      title: search.value
+    })
+
+    if (response.data) {
+      searchResult.value = response.data
+    } else {
+      error.value = 'Movie not found.'
+    }
+  } catch (e) {
+    console.error(e)
+    error.value = 'Error searching movie.'
+  } finally {
+    isSearching.value = false
+  }
+}
+
+const addMovie = () => {
+  if (
+    searchResult.value &&
+    movieList.value.length < 30 &&
+    !movieList.value.some(m => m.id === searchResult.value.id)
+  ) {
+    movieList.value.push(searchResult.value)
+    searchResult.value = null
+    search.value = ''
+  }
+}
+
+const removeMovie = (index) => {
+  movieList.value.splice(index, 1)
+}
+
+const analyzePlatforms = async () => {
+  isAnalyzing.value = true
+  try {
+    const response = await axios.post('/movies-streaming/advanced/subscription-most/analyze', {
+      movies: movieList.value,
+      region: region.value
+    })
+
+    platformResults.value = response.data
+    isAnalyzed.value = true
+  } catch (e) {
+    console.error('Error analyzing platforms:', e)
+  } finally {
+    isAnalyzing.value = false
+  }
+}
+
+const togglePlatform = (platform) => {
+  openPlatforms.value[platform] = !openPlatforms.value[platform]
+}
+
+</script>
+
 <template>
   <AuthenticatedLayout>
     <div class="w-full px-4 py-10">
@@ -27,16 +108,22 @@
               <input
                 type="text"
                 v-model="search"
+                @keyup.enter="searchMovie"
                 placeholder="e.g. Inception"
                 class="flex-grow border rounded-l px-4 py-2 shadow-sm focus:outline-none focus:ring focus:border-blue-300"
               />
               <button
                 @click="searchMovie"
-                class="px-4 py-2 bg-blue-600 text-white rounded-r hover:bg-blue-700 transition"
+                :disabled="isSearching"
+                class="px-4 py-2 bg-blue-600 text-white rounded-r hover:bg-blue-700 transition flex items-center gap-2"
               >
-                🔍 Search
+                <span v-if="!isSearching">🔍 Search</span>
+                <span v-else class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
               </button>
+
             </div>
+            
+
 
             <!-- Region + Analyze -->
             <div class="flex justify-between items-center">
@@ -45,33 +132,51 @@
                 <RegionSelector v-model="region" />
               </div>
 
-              <button
-                @click="analyzePlatforms"
-                class="hidden md:inline-block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-              >
-                Search subscription platforms
-              </button>
+              <template v-if="movieList.length > 0">
+                <button
+                  @click="analyzePlatforms"
+                  :disabled="isAnalyzing"
+                  class="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                  <span v-if="!isAnalyzing">Search subscription platforms</span>
+                  <span v-else class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                </button>
+              </template>
+
             </div>
 
             <!-- Search result -->
-            <div v-if="searchResult" class="mb-4 bg-white p-4 rounded border shadow-sm">
-              🎬 <strong>{{ searchResult.title }}</strong> ({{ searchResult.year }})
+            <div
+              v-if="searchResult"
+              class="mb-4 bg-white p-4 rounded border shadow-sm flex justify-between items-center text-sm"
+            >
+              <div>
+                🎬 <strong>{{ searchResult.title }}</strong> ({{ searchResult.year }})
+              </div>
               <button
                 @click="addMovie"
-                class="ml-4 px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+                class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
               >
                 ➕ Add to list
               </button>
             </div>
 
             <!-- Selected movie list -->
-            <div class="space-y-2 mb-10" v-if="movieList.length > 0">
+            <div class="space-y-1 mb-8" v-if="movieList.length > 0">
               <div
                 v-for="(movie, index) in movieList"
                 :key="index"
-                class="bg-white border-l-4 border-blue-500 px-4 py-3 shadow-sm rounded"
+                class="bg-white border-l-4 border-blue-500 px-4 py-1 shadow-sm rounded text-sm flex justify-between items-center"
               >
-                🎬 <strong>{{ movie.title }}</strong> ({{ movie.year }})
+                <span>🎬 <strong>{{ movie.title }}</strong> ({{ movie.year }})</span>
+                <button
+                  @click="removeMovie(index)"
+                  class="text-red-500 hover:text-red-700 text-xs px-2"
+                  title="Remove"
+                  alt="Remove"
+                >
+                  ❌ Remove
+                </button>
               </div>
             </div>
           </div>
@@ -89,87 +194,43 @@
           <div
             v-for="(data, platform) in platformResults"
             :key="platform"
-            class="bg-white rounded border shadow p-4 mb-4"
+            class="bg-white rounded border shadow mb-2"
           >
-            <h3 class="text-blue-700 font-bold mb-2">{{ platform }} ({{ data.count }} titles)</h3>
-            <ul class="list-disc pl-5 text-gray-700">
-              <li v-for="(movie, index) in data.movies" :key="index">
-                {{ movie }}
-              </li>
-            </ul>
+            <!-- Header as dropdown toggle -->
+            <button
+              @click="togglePlatform(platform)"
+              class="w-full flex justify-between items-center px-4 py-3 text-left text-blue-700 font-bold hover:bg-gray-50 transition"
+            >
+              <span>{{ platform }} ({{ data.count }} titles)</span>
+              <span>
+                <svg
+                  :class="{ 'rotate-180': openPlatforms[platform] }"
+                  class="h-4 w-4 transform transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+            </button>
+
+            <!-- Dropdown content -->
+            <transition name="fade">
+              <ul
+                v-if="openPlatforms[platform]"
+                class="list-disc pl-8 pr-4 pb-3 text-gray-700"
+              >
+                <li v-for="(movie, index) in data.movies" :key="index">
+                  {{ movie }}
+                </li>
+              </ul>
+            </transition>
           </div>
         </div>
+
       </div>
     </div>
   </AuthenticatedLayout>
 </template>
-
-
-
-
-<script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { Link } from '@inertiajs/vue3'
-import RegionSelector from '@/Components/RegionSelector.vue'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-
-const search = ref('')
-const searchResult = ref(null)
-const movieList = ref([])
-const error = ref(null)
-const region = ref('ES')
-const platformResults = ref({})
-const isAnalyzed = ref(false)
-
-// Buscar película por nombre
-const searchMovie = async () => {
-  if (!search.value.trim()) return
-  error.value = null
-  searchResult.value = null
-
-  try {
-    const response = await axios.post('/api/movies/search-title', {
-      title: search.value
-    })
-
-    if (response.data) {
-      searchResult.value = response.data
-    } else {
-      error.value = 'Movie not found.'
-    }
-  } catch (e) {
-    console.error(e)
-    error.value = 'Error searching movie.'
-  }
-}
-
-// Añadir a la lista (máximo 30)
-const addMovie = () => {
-  if (
-    searchResult.value &&
-    movieList.value.length < 30 &&
-    !movieList.value.some(m => m.id === searchResult.value.id)
-  ) {
-    movieList.value.push(searchResult.value)
-    searchResult.value = null
-    search.value = ''
-  }
-}
-
-const analyzePlatforms = async () => {
-  try {
-    const response = await axios.post('/movies-streaming/advanced/subscription-most/analyze', {
-      movies: movieList.value,
-      region: region.value
-    })
-
-    platformResults.value = response.data
-    isAnalyzed.value = true
-  } catch (e) {
-    console.error('Error analyzing platforms:', e)
-  }
-}
-
-
-</script>
