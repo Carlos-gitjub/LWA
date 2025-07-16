@@ -13,7 +13,7 @@ class TmdbApiService
         $this->apiKey = config('services.tmdb.key');
     }
 
-    public function searchMovie(string $query): ?array
+    public function searchMovieFirstMatchByTitle(string $query): ?array
     {
         $res = Http::get("https://api.themoviedb.org/3/search/movie", [
             'api_key' => $this->apiKey,
@@ -23,7 +23,7 @@ class TmdbApiService
         return $res->json('results.0');
     }
 
-    public function getImdbId(int $tmdbId): ?string
+    public function fetchImdbIdFromTmdbId(int $tmdbId): ?string
     {
         $res = Http::get("https://api.themoviedb.org/3/movie/{$tmdbId}/external_ids", [
             'api_key' => $this->apiKey

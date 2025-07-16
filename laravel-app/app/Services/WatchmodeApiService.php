@@ -14,7 +14,7 @@ class WatchmodeApiService
         $this->apiKey = config('services.watchmode.key');
     }
 
-    public function searchByImdb(string $imdbId): ?array
+    public function searchTitleFirstMatchByImdbId(string $imdbId): ?array
     {
         $res = Http::get("https://api.watchmode.com/v1/search/", [
             'apiKey' => $this->apiKey,
@@ -25,7 +25,7 @@ class WatchmodeApiService
         return $res->json('title_results.0');
     }
 
-    public function getSources(int $watchmodeId, string $region): array
+    public function getStreamingSourcesByWatchmodeId(int $watchmodeId, string $region): array
     {
         $res = Http::get("https://api.watchmode.com/v1/title/{$watchmodeId}/sources/", [
             'apiKey' => $this->apiKey,
@@ -35,19 +35,19 @@ class WatchmodeApiService
         return $res->json();
     }
 
-    public function getStreamingPlatforms(int $tmdbId, string $region): array
+    public function getStreamingPlatformsByTmdbId(int $tmdbId, string $region): array
     {
-        $imdbId = $this->tmdb->getImdbId($tmdbId);
+        $imdbId = $this->tmdb->fetchImdbIdFromTmdbId($tmdbId);
         if (!$imdbId) {
             return [];
         }
 
-        $watchmodeTitle = $this->searchByImdb($imdbId);
+        $watchmodeTitle = $this->searchTitleFirstMatchByImdbId($imdbId);
         if (!$watchmodeTitle || !isset($watchmodeTitle['id'])) {
             return [];
         }
 
-        $sources = $this->getSources($watchmodeTitle['id'], $region);
+        $sources = $this->getStreamingSourcesByWatchmodeId($watchmodeTitle['id'], $region);
 
         $subscriptionPlatforms = collect($sources)
             ->filter(fn($s) => $s['type'] === 'sub')

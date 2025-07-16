@@ -23,14 +23,14 @@ class MoviesStreamingController extends Controller
     }
 
     // Búsqueda simple: plataformas por título
-    public function search(MovieSearchRequest $request, MoviesStreamingCoordinatorService $service)
+    public function searchStreamingPlatformsForTitle(MovieSearchRequest $request, MoviesStreamingCoordinatorService $service)
     {
         $platforms = $service->getStreamingPlatformsForTitle($request->title, $request->region);
         return response()->json($platforms);
     }
 
     // Búsqueda por título (TMDB) para añadir a lista
-    public function searchByTitle(Request $request, TmdbApiService $tmdb)
+    public function searchTmdbMovieTitle(Request $request, TmdbApiService $tmdb)
     {
         $title = $request->input('title');
 
@@ -38,7 +38,7 @@ class MoviesStreamingController extends Controller
             return response()->json(null);
         }
 
-        $result = $tmdb->searchMovie($title);
+        $result = $tmdb->searchMovieFirstMatchByTitle($title);
 
         if (!$result) {
             return response()->json(null);
@@ -51,12 +51,12 @@ class MoviesStreamingController extends Controller
         ]);
     }
 
-    public function analyzeSubscription(Request $request, MoviesStreamingCoordinatorService $service)
+    public function analyzeSubscriptionPlatformsFromMovieList(Request $request, MoviesStreamingCoordinatorService $service)
     {
         $movies = $request->input('movies');
         $region = $request->input('region', 'ES');
     
-        $result = $service->getSubscriptionPlatformsFromList($movies, $region);
+        $result = $service->getSubscriptionPlatformsForList($movies, $region);
     
         return response()->json($result);
     }

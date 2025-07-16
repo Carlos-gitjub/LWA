@@ -37,9 +37,9 @@ Route::get('/movies-streaming/advanced/subscription-most', [MoviesStreamingContr
     ->middleware('auth')
     ->name('subscription.most');
 
-Route::post('/movies-streaming/search', [MoviesStreamingController::class, 'search']);
-Route::post('/api/movies/search-title', [MoviesStreamingController::class, 'searchByTitle']);
-Route::post('/movies-streaming/advanced/subscription-most/analyze', [MoviesStreamingController::class, 'analyzeSubscription'])
+Route::post('/movies-streaming/search', [MoviesStreamingController::class, 'searchStreamingPlatformsForTitle']);
+Route::post('/api/movies/search-title', [MoviesStreamingController::class, 'searchTmdbMovieTitle']);
+Route::post('/movies-streaming/advanced/subscription-most/analyze', [MoviesStreamingController::class, 'analyzeSubscriptionPlatformsFromMovieList'])
     ->middleware('auth')
     ->name('subscription.most.analyze');
     

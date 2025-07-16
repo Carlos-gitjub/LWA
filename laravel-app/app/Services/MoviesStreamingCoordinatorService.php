@@ -13,16 +13,16 @@ class MoviesStreamingCoordinatorService
 
     public function getStreamingPlatformsForTitle(string $title, string $region): array
     {
-        $tmdbResult = $this->tmdb->searchMovie($title);
+        $tmdbResult = $this->tmdb->searchMovieFirstMatchByTitle($title);
         if (!$tmdbResult) return [];
 
-        $imdbId = $this->tmdb->getImdbId($tmdbResult['id']);
+        $imdbId = $this->tmdb->fetchImdbIdFromTmdbId($tmdbResult['id']);
         if (!$imdbId) return [];
 
-        $watchmodeMovie = $this->watchmode->searchByImdb($imdbId);
+        $watchmodeMovie = $this->watchmode->searchTitleFirstMatchByImdbId($imdbId);
         if (!$watchmodeMovie) return [];
 
-        $sources = $this->watchmode->getSources($watchmodeMovie['id'], $region);
+        $sources = $this->watchmode->getStreamingSourcesByWatchmodeId($watchmodeMovie['id'], $region);
 
         return collect($sources)->unique(function ($s) {
             return $s['name'] . $s['type'] . $s['format'] . $s['price'] . $s['web_url'];
@@ -37,7 +37,7 @@ class MoviesStreamingCoordinatorService
         })->values()->all();
     }
 
-    public function getSubscriptionPlatformsFromList(array $movies, string $region): array
+    public function getSubscriptionPlatformsForList(array $movies, string $region): array
     {
         $platformMovieMap = [];
 
@@ -46,7 +46,7 @@ class MoviesStreamingCoordinatorService
             $title = $movie['title'];
             $year = $movie['year'];
 
-            $platforms = $this->watchmode->getStreamingPlatforms($tmdbId, $region);
+            $platforms = $this->watchmode->getStreamingPlatformsByTmdbId($tmdbId, $region);
 
             foreach ($platforms as $platform) {
                 $platformMovieMap[$platform][] = "{$title} ({$year})";
