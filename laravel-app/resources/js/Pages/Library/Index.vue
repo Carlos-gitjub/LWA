@@ -6,7 +6,7 @@
               type="text" placeholder="Buscar por título o autor"
               class="border p-2 rounded w-1/2" />
 
-        <button @click="goToAddBook"
+        <button @click="showModal = true"
                 class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Añadir libro
         </button>
@@ -34,6 +34,9 @@
         </div>
       </div>
     </div>
+
+    <BookForm v-if="showModal" @close="showModal = false" />
+
   </AuthenticatedLayout>
 </template>
 
@@ -42,14 +45,16 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import BookForm from '@/Components/Library/BookForm.vue'
+const showModal = ref(false)
 
-const books = ref([])
+const props = defineProps({
+  books: Array
+})
+
+const books = ref(props.books)
 const search = ref('')
 const openMenu = ref(null)
-
-onMounted(() => {
-  books.value = history.state.props.books || []
-})
 
 const searchBooks = async () => {
   if (search.value.length === 0) {

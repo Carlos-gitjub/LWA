@@ -13,7 +13,7 @@ class MoviesStreamingController extends Controller
     // Página principal
     public function index()
     {
-        return Inertia::render('MoviesStreaming/MoviesStreaming');
+        return Inertia::render('MoviesStreaming/Index');
     }
 
     // Página avanzada: Subscription Most

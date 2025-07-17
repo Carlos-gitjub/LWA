@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
-import RegionSelector from '@/Components/RegionSelector.vue'
+import RegionSelector from '@/Components/MoviesStreaming/RegionSelector.vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const search = ref('')

@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('library')->group(function () {
         Route::get('/', [LibraryController::class, 'index'])->name('library.index');
         Route::get('/search', [LibraryController::class, 'search'])->name('library.search');
+        Route::post('/store', [LibraryController::class, 'store'])->name('library.store');
     });
 });
 
