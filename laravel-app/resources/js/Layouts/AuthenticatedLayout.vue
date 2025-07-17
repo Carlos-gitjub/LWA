@@ -61,6 +61,9 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink :href="route('movies.streaming')">
                                             Movies - Streaming
                                         </DropdownLink>
+                                        <DropdownLink :href="route('library.index')">
+                                            Library
+                                        </DropdownLink>
                                     </template>
                                 </Dropdown>
                             </div>
