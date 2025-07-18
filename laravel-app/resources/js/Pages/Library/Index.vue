@@ -12,23 +12,44 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="book in books" :key="book.id" class="border rounded p-4 shadow">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="text-lg font-bold">{{ book.title }}</h3>
-              <p class="text-sm text-gray-600">{{ book.author }}</p>
-            </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div v-for="book in books" :key="book.id" class="bg-white border rounded-lg shadow p-3 w-full max-w-[200px] mx-auto relative group hover:shadow-md transition">
+          <!-- Imagen de portada -->
+          <div class="w-full h-32 bg-gray-100 rounded flex items-center justify-center overflow-hidden mb-2">
+            <img
+              v-if="book.cover_url"
+              :src="book.cover_url"
+              alt="Portada del libro"
+              class="object-cover h-full w-full"
+            />
+            <div v-else class="text-gray-400 text-xs">Sin portada</div>
+          </div>
 
-            <div class="relative">
-              <button @click="toggleMenu(book.id)" class="text-gray-500 hover:text-gray-800">
-                ⋯
+          <!-- Título y autor -->
+          <div class="text-sm mb-1">
+            <h3 class="font-semibold text-gray-800 truncate leading-tight">{{ book.title }}</h3>
+            <p class="text-gray-500 text-xs truncate">{{ book.author || 'Autor desconocido' }}</p>
+          </div>
+
+          <!-- Menú ⋯ contextual -->
+          <div class="absolute top-2 right-2">
+            <button @click="toggleMenu(book.id)" class="text-gray-500 hover:text-gray-800 text-lg">⋯</button>
+            <div
+              v-if="openMenu === book.id"
+              class="absolute right-0 mt-2 w-28 bg-white border shadow rounded z-10"
+            >
+              <button
+                @click="editBook(book)"
+                class="block px-3 py-2 hover:bg-gray-100 w-full text-left text-sm"
+              >
+                ✏️ Editar
               </button>
-
-              <div v-if="openMenu === book.id" class="absolute right-0 mt-2 w-32 bg-white border shadow rounded z-10">
-                <button @click="editBook(book)" class="block px-4 py-2 hover:bg-gray-100 w-full text-left">Editar</button>
-                <button @click="deleteBook(book.id)" class="block px-4 py-2 text-red-600 hover:bg-red-100 w-full text-left">Eliminar</button>
-              </div>
+              <button
+                @click="deleteBook(book.id)"
+                class="block px-3 py-2 text-red-600 hover:bg-red-100 w-full text-left text-sm"
+              >
+                🗑 Eliminar
+              </button>
             </div>
           </div>
         </div>
