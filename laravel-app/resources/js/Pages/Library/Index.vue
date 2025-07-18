@@ -89,10 +89,6 @@ const searchBooks = async () => {
   books.value = res.data
 }
 
-const goToAddBook = () => {
-  router.visit('/library/create')
-}
-
 const editBook = (book) => {
   router.visit(`/library/edit/${book.id}`)
 }
