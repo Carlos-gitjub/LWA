@@ -30,7 +30,7 @@ class LibraryController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'nullable|string|max:255',
-            'file' => 'nullable|file|mimes:pdf|max:30000', // 30MB
+            'file' => 'nullable|file|mimes:pdf|max:30000',
             'cover_base64' => 'nullable|string',
         ]);
     
@@ -41,18 +41,15 @@ class LibraryController extends Controller
             $path = $request->file('file')->store('books', 'public');
         }
     
-        // Guardar imagen base64 si existe
         if ($request->filled('cover_base64')) {
-            $imageData = $request->input('cover_base64');
-            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $request->input('cover_base64'));
             $imageData = base64_decode($imageData);
-    
             $filename = 'covers/' . uniqid() . '.jpg';
             Storage::disk('public')->put($filename, $imageData);
             $coverPath = $filename;
         }
     
-        Book::create([
+        $book = Book::create([
             'title' => $validated['title'],
             'author' => $validated['author'] ?? null,
             'file_path' => $path,
@@ -60,15 +57,10 @@ class LibraryController extends Controller
         ]);
     
         return response()->json([
-            'book' => Book::create([
-                'title' => $validated['title'],
-                'author' => $validated['author'] ?? null,
-                'file_path' => $path,
-                'cover_path' => $coverPath,
-            ])->fresh()
+            'book' => $book->fresh()
         ]);
-        
     }
+    
     
     public function destroy($id)
     {
