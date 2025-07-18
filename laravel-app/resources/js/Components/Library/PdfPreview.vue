@@ -4,21 +4,33 @@
     <div
       v-for="(thumb, index) in thumbnails"
       :key="index"
-      class="w-24 h-32 border rounded overflow-hidden cursor-pointer relative"
+      class="w-24 h-32 border rounded overflow-hidden cursor-pointer relative transform transition duration-300 hover:scale-125"
       :class="{ 'ring-4 ring-blue-500': selectedIndex === index }"
-      @click="$emit('select', thumb)"
+      @click="() => selectThumbnail(index)"
     >
       <img :src="thumb" class="w-full h-full object-cover" />
+
+      <!-- ✅ Marca de selección -->
+      <div
+        v-if="selectedIndex === index"
+        class="absolute top-1 right-1 bg-white text-blue-600 rounded-full p-1 text-xs font-bold shadow"
+        title="Seleccionado"
+      >
+        ✔
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { onMounted, ref, watch } from 'vue'
-import * as pdfjsLib from 'pdfjs-dist'
-import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker?worker'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
+<script setup>
+import { ref, watch } from 'vue'
+import * as pdfjsLib from 'pdfjs-dist'
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url
+).toString()
+
 
 const props = defineProps({
   file: File
@@ -60,6 +72,11 @@ watch(() => props.file, async (newFile) => {
 
   reader.readAsArrayBuffer(newFile)
 }, { immediate: true })
+
+const selectThumbnail = (index) => {
+  selectedIndex.value = index
+  emit('select', thumbnails.value[index])
+}
 
 
 </script>

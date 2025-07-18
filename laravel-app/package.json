@@ -22,7 +22,7 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^6.7.2",
-        "pdfjs-dist": "^2.16.105",
+        "pdfjs-dist": "^3.11.174",
         "ziggy": "^2.4.0"
     }
 }
