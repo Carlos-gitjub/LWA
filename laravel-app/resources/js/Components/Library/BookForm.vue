@@ -28,6 +28,11 @@
           <button @click.prevent="$emit('close')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar</button>
         </div>
+
+        <div v-if="form.file">
+  <label class="block font-semibold mb-1">Selecciona una portada desde el PDF:</label>
+  <PdfPreview :file="form.file" @select="(thumb) => form.selected_thumbnail = thumb" />
+</div>
       </form>
     </div>
   </div>
@@ -36,6 +41,7 @@
 <script setup>
 import { ref } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import PdfPreview from '@/Components/Library/PdfPreview.vue'
 
 const form = ref({
   title: '',
@@ -47,6 +53,7 @@ const errors = usePage().props.errors || {}
 
 const handleFile = (e) => {
   form.value.file = e.target.files[0]
+  console.log('📁 Archivo seleccionado:', form.value.file)
 }
 
 const submitForm = () => {
@@ -56,6 +63,10 @@ const submitForm = () => {
   if (form.value.file) {
     formData.append('file', form.value.file)
   }
+  if (form.value.selected_thumbnail) {
+    formData.append('cover_base64', form.value.selected_thumbnail)
+  }
+
 
   router.post('/library/store', formData, {
     onSuccess: () => {
