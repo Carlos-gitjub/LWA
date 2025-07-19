@@ -8,12 +8,19 @@ use Illuminate\Support\Facades\Storage;
 
 class LibraryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $books = Book::latest()->get();
+    
+        if ($request->wantsJson()) {
+            return response()->json($books);
+        }
+    
         return inertia('Library/Index', [
-            'books' => Book::latest()->get()
+            'books' => $books
         ]);
     }
+    
 
     public function search(Request $request)
     {
