@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/search', [LibraryController::class, 'search'])->name('library.search');
         Route::post('/store', [LibraryController::class, 'store'])->name('library.store');
         Route::delete('/delete/{id}', [LibraryController::class, 'destroy'])->name('library.delete');
+        Route::get('/search-engine', fn () => Inertia::render('Library/SearchEngine'))->name('library.search-engine');
+        Route::post('/search-engine', [LibraryController::class, 'searchEngine'])->name('library.search-engine.post');
     });
 });
 

@@ -102,9 +102,27 @@ const showNotification = (message, type = 'success') => {
           </button>
         </div>
 
-        <button @click="showModal = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Añadir libro
-        </button>
+        <div class="flex gap-3">
+          <button
+            @click="showModal = true"
+            class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-3 rounded-lg shadow transition duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Añadir libro
+          </button>
+
+          <button
+            @click="router.visit('/library/search-engine')"
+            class="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-3 rounded-lg shadow-lg transition duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.75 3.75a7.5 7.5 0 0012.9 12.9z" />
+            </svg>
+            Search engine
+          </button>
+        </div>
       </div>
 
       <!-- CARD VIEW -->
