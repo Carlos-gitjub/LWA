@@ -75,7 +75,6 @@ class LibraryController extends Controller
             $pdf = $parser->parseFile(storage_path("app/public/{$path}"));
             $pages = $pdf->getPages();
         } catch (\Exception $e) {
-            // Limpia si el PDF fue subido pero no se puede parsear
             Storage::disk('public')->delete($path);
             $book->delete();
             return response()->json(['error' => 'Error al procesar el PDF'], 422);
@@ -99,8 +98,7 @@ class LibraryController extends Controller
             'book' => $book->fresh()
         ]);
     }
-    
-    
+
     public function destroy($id)
     {
         $book = Book::findOrFail($id);
@@ -126,7 +124,7 @@ class LibraryController extends Controller
         $authorIds = $request->input('authors', []);
         $bookIds = $request->input('books', []);
 
-        $results = BookPage::query()
+        $rawResults = BookPage::query()
             ->with('book')
             ->when($query, function ($q) use ($query) {
                 $q->where('content', 'like', '%' . $query . '%');
@@ -139,23 +137,33 @@ class LibraryController extends Controller
             ->when(!empty($bookIds), function ($q) use ($bookIds) {
                 $q->whereIn('book_id', $bookIds);
             })
-            ->limit(100) // para evitar cargas pesadas
-            ->get()
-            ->map(function ($page) use ($query) {
-                // Obtiene una parte del texto donde aparece la búsqueda
-                $preview = $this->getSnippet($page->content, $query);
+            ->limit(10000)
+            ->get();
 
-                return [
-                    'id' => $page->id,
-                    'book' => $page->book->title,
-                    'author' => $page->book->author,
-                    'preview' => $preview,
-                    'page' => $page->page_number,
-                ];
-            });
+        $grouped = $rawResults->groupBy(fn($item) => $item->book_id . '-' . $item->page_number);
 
-        return response()->json($results);
+        $results = $grouped->map(function ($items, $key) use ($query) {
+            $first = $items->first();
+            $matches = substr_count(strtolower($first->content), strtolower($query));
+            return [
+                'id' => $first->id,
+                'book' => $first->book->title,
+                'author' => $first->book->author,
+                'preview' => $this->getSnippet($first->content, $query),
+                'page' => $first->page_number,
+                'matches' => $matches
+            ];
+        });
+
+        $totalMatches = $results->sum('matches');
+
+        return response()->json([
+            'results' => $results->values(),
+            'total_matches' => $totalMatches,
+            'total_pages' => $results->count()
+        ]);
     }
+
 
     private function getSnippet($text, $query, $radius = 40)
     {
@@ -166,5 +174,4 @@ class LibraryController extends Controller
         $length = strlen($query) + $radius * 2;
         return '...' . substr($text, $start, $length) . '...';
     }
-
 }
