@@ -120,58 +120,83 @@ class LibraryController extends Controller
 
     public function searchEngine(Request $request)
     {
-        $query = $request->input('q');
-        $authorIds = $request->input('authors', []);
-        $bookIds = $request->input('books', []);
-
-        $rawResults = BookPage::query()
-            ->with('book')
-            ->when($query, function ($q) use ($query) {
-                $q->where('content', 'like', '%' . $query . '%');
-            })
-            ->when(!empty($authorIds), function ($q) use ($authorIds) {
-                $q->whereHas('book', function ($q2) use ($authorIds) {
-                    $q2->whereIn('author', $authorIds);
-                });
-            })
-            ->when(!empty($bookIds), function ($q) use ($bookIds) {
-                $q->whereIn('book_id', $bookIds);
-            })
-            ->limit(10000)
-            ->get();
-
-        $grouped = $rawResults->groupBy(fn($item) => $item->book_id . '-' . $item->page_number);
-
-        $results = $grouped->map(function ($items, $key) use ($query) {
-            $first = $items->first();
-            $matches = substr_count(strtolower($first->content), strtolower($query));
-            return [
-                'id' => $first->id,
-                'book' => $first->book->title,
-                'author' => $first->book->author,
-                'preview' => $this->getSnippet($first->content, $query),
-                'page' => $first->page_number,
-                'matches' => $matches
-            ];
-        });
-
-        $totalMatches = $results->sum('matches');
-
-        return response()->json([
-            'results' => $results->values(),
-            'total_matches' => $totalMatches,
-            'total_pages' => $results->count()
-        ]);
+        try {
+            $query = $request->input('q');
+            $authorIds = $request->input('authors', []);
+            $bookIds = $request->input('books', []);
+    
+            $rawResults = BookPage::query()
+                ->with('book')
+                ->when($query, function ($q) use ($query) {
+                    $q->where('content', 'like', '%' . $query . '%');
+                })
+                ->when(!empty($authorIds), function ($q) use ($authorIds) {
+                    $q->whereHas('book', function ($q2) use ($authorIds) {
+                        $q2->whereIn('author', $authorIds);
+                    });
+                })
+                ->when(!empty($bookIds), function ($q) use ($bookIds) {
+                    $q->whereIn('book_id', $bookIds);
+                })
+                ->limit(10000)
+                ->get();
+    
+            $grouped = $rawResults->groupBy(fn($item) => $item->book_id . '-' . $item->page_number);
+    
+            $results = collect();
+            $totalMatches = 0;
+    
+            foreach ($grouped as $group) {
+                $first = $group->first();
+                $book = $first->book()->first();
+    
+                // Sanitizar contenido para asegurar codificación válida
+                $content = mb_convert_encoding($first->content, 'UTF-8', 'UTF-8');
+    
+                $matches = substr_count(mb_strtolower($content), mb_strtolower($query));
+                $totalMatches += $matches;
+    
+                $results->push([
+                    'id' => $first->id,
+                    'book' => mb_convert_encoding($book->title ?? 'Libro desconocido', 'UTF-8', 'UTF-8'),
+                    'author' => mb_convert_encoding($book->author ?? 'Autor desconocido', 'UTF-8', 'UTF-8'),
+                    'preview' => mb_convert_encoding($this->getSnippet($content, $query), 'UTF-8', 'UTF-8'),
+                    'page' => $first->page_number,
+                    'count' => $matches,
+                ]);
+            }
+    
+            return response()->json([
+                'results' => $results,
+                'total_matches' => $totalMatches,
+                'total_pages' => $grouped->count()
+            ], 200, ['Content-Type' => 'application/json; charset=UTF-8'], JSON_UNESCAPED_UNICODE);
+    
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
-
-
+    
     private function getSnippet($text, $query, $radius = 40)
     {
-        $pos = stripos($text, $query);
-        if ($pos === false) return substr($text, 0, $radius * 2) . '...';
-
+        // Convertir a UTF-8 seguro
+        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        $query = mb_convert_encoding($query, 'UTF-8', 'UTF-8');
+    
+        $pos = mb_stripos($text, $query);
+    
+        if ($pos === false) {
+            return mb_substr($text, 0, $radius * 2) . '...';
+        }
+    
         $start = max(0, $pos - $radius);
-        $length = strlen($query) + $radius * 2;
-        return '...' . substr($text, $start, $length) . '...';
+        $length = mb_strlen($query) + $radius * 2;
+    
+        return '...' . mb_substr($text, $start, $length) . '...';
     }
+    
 }
