@@ -68,6 +68,7 @@ onMounted(() => {
           type="text"
           placeholder="Buscar contenido dentro de libros"
           class="w-full border rounded p-2"
+          @keyup.enter="search"
         />
       </div>
 
@@ -99,10 +100,17 @@ onMounted(() => {
 
       <button
         @click="search"
-        class="mt-4 md:mt-0 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        :disabled="loading"
+        :class="[
+          'mt-4 md:mt-0 px-4 py-2 rounded transition',
+          loading
+            ? 'bg-blue-300 text-white cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
+        ]"
       >
         Buscar
       </button>
+
     </div>
 
     <!-- Resumen -->
