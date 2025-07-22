@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Multiselect from 'vue-multiselect'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const query = ref('')
 const selectedAuthors = ref([])
@@ -58,96 +59,98 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto p-6">
-    <!-- Filtros -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-end md:gap-4">
-      <div class="flex-1">
-        <label class="block mb-1 font-semibold text-gray-700">Buscar texto</label>
-        <input
-          v-model="query"
-          type="text"
-          placeholder="Buscar contenido dentro de libros"
-          class="w-full border rounded p-2"
-          @keyup.enter="search"
-        />
+  <AuthenticatedLayout>
+    <div class="container mx-auto p-6">
+      <!-- Filtros -->
+      <div class="mb-6 flex flex-col md:flex-row md:items-end md:gap-4">
+        <div class="flex-1">
+          <label class="block mb-1 font-semibold text-gray-700">Buscar texto</label>
+          <input
+            v-model="query"
+            type="text"
+            placeholder="Buscar contenido dentro de libros"
+            class="w-full border rounded p-2"
+            @keyup.enter="search"
+          />
+        </div>
+
+        <div class="flex-1">
+          <label class="block mb-1 font-semibold text-gray-700">Filtrar por autores</label>
+          <Multiselect
+            v-model="selectedAuthors"
+            :options="authors"
+            :multiple="true"
+            :searchable="true"
+            placeholder="Seleccionar autores"
+            label="name"
+            track-by="id"
+          />
+        </div>
+
+        <div class="flex-1">
+          <label class="block mb-1 font-semibold text-gray-700">Filtrar por libros</label>
+          <Multiselect
+            v-model="selectedBooks"
+            :options="books"
+            :multiple="true"
+            :searchable="true"
+            placeholder="Seleccionar libros"
+            label="title"
+            track-by="id"
+          />
+        </div>
+
+        <button
+          @click="search"
+          :disabled="loading"
+          :class="[
+            'mt-4 md:mt-0 px-4 py-2 rounded transition',
+            loading
+              ? 'bg-blue-300 text-white cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          ]"
+        >
+          Buscar
+        </button>
+
       </div>
 
-      <div class="flex-1">
-        <label class="block mb-1 font-semibold text-gray-700">Filtrar por autores</label>
-        <Multiselect
-          v-model="selectedAuthors"
-          :options="authors"
-          :multiple="true"
-          :searchable="true"
-          placeholder="Seleccionar autores"
-          label="name"
-          track-by="id"
-        />
+      <!-- Resumen -->
+      <div v-if="results.length" class="mb-4 text-gray-600 text-sm">
+        <strong>Resultados encontrados:</strong> {{ totalMatches }} en {{ totalPages }} páginas.
       </div>
 
-      <div class="flex-1">
-        <label class="block mb-1 font-semibold text-gray-700">Filtrar por libros</label>
-        <Multiselect
-          v-model="selectedBooks"
-          :options="books"
-          :multiple="true"
-          :searchable="true"
-          placeholder="Seleccionar libros"
-          label="title"
-          track-by="id"
-        />
+      <!-- LOADER -->
+      <div v-if="loading" class="flex justify-center mt-6">
+        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+          </path>
+        </svg>
       </div>
 
-      <button
-        @click="search"
-        :disabled="loading"
-        :class="[
-          'mt-4 md:mt-0 px-4 py-2 rounded transition',
-          loading
-            ? 'bg-blue-300 text-white cursor-not-allowed'
-            : 'bg-blue-600 text-white hover:bg-blue-700'
-        ]"
-      >
-        Buscar
-      </button>
+      <!-- RESULTADOS -->
+      <div v-else-if="results.length" class="space-y-4">
+        <div
+          v-for="result in results"
+          :key="result.page_id"
+          class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition"
+        >
+          <h3 class="text-lg font-semibold text-gray-800">
+            {{ result.book }} — {{ result.author }}
+          </h3>
+          <p class="text-gray-600 mt-2" v-html="highlight(result.preview, query)" />
+          <p class="text-sm text-gray-500 mt-1">
+            Página {{ result.page }} — {{ result.count }} coincidenc{{ result.count === 1 ? 'ia' : 'ias' }} en esta página
+          </p>
+        </div>
+      </div>
 
-    </div>
-
-    <!-- Resumen -->
-    <div v-if="results.length" class="mb-4 text-gray-600 text-sm">
-      <strong>Resultados encontrados:</strong> {{ totalMatches }} en {{ totalPages }} páginas.
-    </div>
-
-    <!-- LOADER -->
-    <div v-if="loading" class="flex justify-center mt-6">
-      <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-        </path>
-      </svg>
-    </div>
-
-    <!-- RESULTADOS -->
-    <div v-else-if="results.length" class="space-y-4">
-      <div
-        v-for="result in results"
-        :key="result.page_id"
-        class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition"
-      >
-        <h3 class="text-lg font-semibold text-gray-800">
-          {{ result.book }} — {{ result.author }}
-        </h3>
-        <p class="text-gray-600 mt-2" v-html="highlight(result.preview, query)" />
-        <p class="text-sm text-gray-500 mt-1">
-          Página {{ result.page }} — {{ result.count }} coincidenc{{ result.count === 1 ? 'ia' : 'ias' }} en esta página
-        </p>
+      <!-- NADA ENCONTRADO -->
+      <div v-else class="text-center text-gray-400 mt-8">
+        No hay resultados.
       </div>
     </div>
-
-    <!-- NADA ENCONTRADO -->
-    <div v-else class="text-center text-gray-400 mt-8">
-      No hay resultados.
-    </div>
-  </div>
+  </AuthenticatedLayout>
 </template>
