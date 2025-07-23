@@ -65,11 +65,11 @@ onMounted(() => {
       <!-- Filtros -->
       <div class="mb-6 flex flex-col md:flex-row md:items-end md:gap-4">
 
-        <div class="flex flex-col justify-end">
+        <div class="flex flex-col justify-end w-full md:w-auto">
           <label class="block mb-1 font-semibold text-gray-700 invisible">Volver</label>
           <Link
             href="/library"
-            class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+            class="w-full md:w-auto h-[42px] px-4 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 transition text-center flex items-center justify-center"
           >
             ← Volver
           </Link>
@@ -116,22 +116,18 @@ onMounted(() => {
         </div>
 
         <!-- Botón Buscar -->
-<!-- Botón Buscar -->
-<div class="flex flex-col justify-end">
-  <label class="block mb-1 font-semibold text-gray-700 invisible">Buscar</label>
-  <button
-    @click="search"
-    :disabled="loading"
-    :class="[
-      'px-4 py-2 rounded transition',
-      loading
-        ? 'bg-blue-300 text-white cursor-not-allowed'
-        : 'bg-blue-600 text-white hover:bg-blue-700'
-    ]"
-  >
-    Buscar
-  </button>
-</div>
+        <div class="flex flex-col justify-end w-full md:w-auto">
+          <label class="block mb-1 font-semibold text-gray-700 invisible">Buscar</label>
+          <button
+            @click="search"
+            :disabled="loading"
+            class="w-full md:w-auto h-[42px] px-4 rounded text-white transition 
+                  disabled:bg-blue-300 disabled:cursor-not-allowed
+                  bg-blue-600 hover:bg-blue-700"
+          >
+            Buscar
+          </button>
+        </div>
 
       </div>
 
