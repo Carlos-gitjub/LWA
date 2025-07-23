@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Multiselect from 'vue-multiselect'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { Link } from '@inertiajs/vue3'
 
 const query = ref('')
 const selectedAuthors = ref([])
@@ -63,6 +64,18 @@ onMounted(() => {
     <div class="container mx-auto p-6">
       <!-- Filtros -->
       <div class="mb-6 flex flex-col md:flex-row md:items-end md:gap-4">
+
+        <div class="flex flex-col justify-end">
+          <label class="block mb-1 font-semibold text-gray-700 invisible">Volver</label>
+          <Link
+            href="/library"
+            class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition"
+          >
+            ← Volver
+          </Link>
+        </div>
+
+        <!-- Campo texto -->
         <div class="flex-1">
           <label class="block mb-1 font-semibold text-gray-700">Buscar texto</label>
           <input
@@ -74,6 +87,7 @@ onMounted(() => {
           />
         </div>
 
+        <!-- Autores -->
         <div class="flex-1">
           <label class="block mb-1 font-semibold text-gray-700">Filtrar por autores</label>
           <Multiselect
@@ -87,6 +101,7 @@ onMounted(() => {
           />
         </div>
 
+        <!-- Libros -->
         <div class="flex-1">
           <label class="block mb-1 font-semibold text-gray-700">Filtrar por libros</label>
           <Multiselect
@@ -100,18 +115,23 @@ onMounted(() => {
           />
         </div>
 
-        <button
-          @click="search"
-          :disabled="loading"
-          :class="[
-            'mt-4 md:mt-0 px-4 py-2 rounded transition',
-            loading
-              ? 'bg-blue-300 text-white cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          ]"
-        >
-          Buscar
-        </button>
+        <!-- Botón Buscar -->
+<!-- Botón Buscar -->
+<div class="flex flex-col justify-end">
+  <label class="block mb-1 font-semibold text-gray-700 invisible">Buscar</label>
+  <button
+    @click="search"
+    :disabled="loading"
+    :class="[
+      'px-4 py-2 rounded transition',
+      loading
+        ? 'bg-blue-300 text-white cursor-not-allowed'
+        : 'bg-blue-600 text-white hover:bg-blue-700'
+    ]"
+  >
+    Buscar
+  </button>
+</div>
 
       </div>
 
