@@ -155,15 +155,22 @@ onMounted(() => {
         <div
           v-for="result in results"
           :key="result.page_id"
-          class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition max-w-[700px] w-full mx-auto"
+          class="max-w-[700px] w-full mx-auto"
         >
-          <h3 class="text-lg font-semibold text-gray-800">
-            {{ result.book }} — {{ result.author }}
-          </h3>
-          <p class="text-gray-600 mt-2" v-html="highlight(result.preview, query)" />
-          <p class="text-sm text-gray-500 mt-1">
-            Página {{ result.page }} — {{ result.count }} coincidenc{{ result.count === 1 ? 'ia' : 'ias' }} en esta página
-          </p>
+          <a
+            :href="'/storage/' + result.file_path + '#page=' + result.page"
+            target="_blank"
+            rel="noopener"
+            class="block bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition"
+          >
+            <h3 class="text-lg font-semibold text-gray-800">
+              {{ result.book }} — {{ result.author }}
+            </h3>
+            <p class="text-gray-600 mt-2" v-html="highlight(result.preview, query)"></p>
+            <p class="text-sm text-gray-500 mt-1">
+              Página {{ result.page }} — {{ result.count }} coincidenc{{ result.count === 1 ? 'ia' : 'ias' }} en esta página
+            </p>
+          </a>
         </div>
       </div>
 

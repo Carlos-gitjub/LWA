@@ -162,10 +162,12 @@ class LibraryController extends Controller
                     'id' => $first->id,
                     'book' => mb_convert_encoding($book->title ?? 'Libro desconocido', 'UTF-8', 'UTF-8'),
                     'author' => mb_convert_encoding($book->author ?? 'Autor desconocido', 'UTF-8', 'UTF-8'),
+                    'file_path' => $book->file_path,
                     'preview' => mb_convert_encoding($this->getSnippet($content, $query), 'UTF-8', 'UTF-8'),
                     'page' => $first->page_number,
                     'count' => $matches,
                 ]);
+                
             }
     
             return response()->json([
