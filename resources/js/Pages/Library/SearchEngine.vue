@@ -132,9 +132,13 @@ onMounted(() => {
       </div>
 
       <!-- Resumen -->
-      <div v-if="results.length" class="mb-4 text-gray-600 text-sm">
+      <div
+        v-if="results.length"
+        class="mb-4 text-gray-600 text-sm max-w-[700px] w-full mx-auto"
+      >
         <strong>Resultados encontrados:</strong> {{ totalMatches }} en {{ totalPages }} páginas.
       </div>
+
 
       <!-- LOADER -->
       <div v-if="loading" class="flex justify-center mt-6">
@@ -151,7 +155,7 @@ onMounted(() => {
         <div
           v-for="result in results"
           :key="result.page_id"
-          class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition"
+          class="bg-white shadow rounded-lg p-4 border-l-4 border-yellow-400 cursor-pointer hover:bg-yellow-50 transition max-w-[700px] w-full mx-auto"
         >
           <h3 class="text-lg font-semibold text-gray-800">
             {{ result.book }} — {{ result.author }}

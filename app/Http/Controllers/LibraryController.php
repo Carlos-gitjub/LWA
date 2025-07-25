@@ -266,8 +266,5 @@ class LibraryController extends Controller
 
         return response()->json(['book' => $book->fresh()]);
     }
-
-
-    
     
 }
