@@ -51,6 +51,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete/{id}', [LibraryController::class, 'destroy'])->name('library.delete');
         Route::get('/search-engine', fn () => Inertia::render('Library/SearchEngine'))->name('library.search-engine');
         Route::post('/search-engine', [LibraryController::class, 'searchEngine'])->name('library.search-engine.post');
+        Route::post('/update/{id}', [LibraryController::class, 'update'])->name('library.update');
+
     });
 });
 

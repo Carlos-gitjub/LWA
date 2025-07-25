@@ -198,5 +198,71 @@ class LibraryController extends Controller
     
         return '...' . mb_substr($text, $start, $length) . '...';
     }
+
+    public function update(Request $request, $id)
+    {
+        $book = Book::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'file' => 'nullable|file|mimes:pdf|max:30000',
+            'cover_base64' => 'nullable|string',
+        ]);
+
+        // Si se sube un nuevo archivo PDF
+        if ($request->hasFile('file')) {
+            // Eliminar el anterior
+            if ($book->file_path && Storage::disk('public')->exists($book->file_path)) {
+                Storage::disk('public')->delete($book->file_path);
+            }
+            // Guardar el nuevo
+            $book->file_path = $request->file('file')->store('books', 'public');
+
+            // Reprocesar el contenido PDF
+            $book->pages()->delete();
+            try {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf = $parser->parseFile(storage_path("app/public/{$book->file_path}"));
+                $pages = $pdf->getPages();
+
+                $maxPages = 20000;
+                foreach ($pages as $index => $page) {
+                    if ($index >= $maxPages) break;
+                    $text = $page->getText();
+                    if (trim($text) !== '') {
+                        BookPage::create([
+                            'book_id' => $book->id,
+                            'page_number' => $index + 1,
+                            'content' => $text
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                Storage::disk('public')->delete($book->file_path);
+                return response()->json(['error' => 'Error al procesar el nuevo PDF'], 422);
+            }
+        }
+
+        // Si se sube una nueva portada
+        if ($request->filled('cover_base64')) {
+            if ($book->cover_path && Storage::disk('public')->exists($book->cover_path)) {
+                Storage::disk('public')->delete($book->cover_path);
+            }
+            $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $request->input('cover_base64')));
+            $filename = 'covers/' . uniqid() . '.jpg';
+            Storage::disk('public')->put($filename, $imageData);
+            $book->cover_path = $filename;
+        }
+
+        $book->title = $validated['title'];
+        $book->author = $validated['author'] ?? null;
+        $book->save();
+
+        return response()->json(['book' => $book->fresh()]);
+    }
+
+
+    
     
 }

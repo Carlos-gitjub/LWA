@@ -13,6 +13,7 @@ const openMenu = ref(null)
 const selectedImage = ref(null)
 const notification = ref({ message: '', type: '' })
 const viewMode = ref(localStorage.getItem('viewMode') || 'cards')
+const editingBook = ref(null)
 
 // SEARCH
 const searchBooks = async () => {
@@ -37,7 +38,11 @@ const searchBooks = async () => {
 watch(search, debounce(searchBooks, 300))
 
 // ACTIONS
-const editBook = (book) => router.visit(`/library/edit/${book.id}`)
+const editBook = (book) => {
+  editingBook.value = book
+  showModal.value = true
+}
+
 const deleteBook = async (id) => {
   if (!confirm('¿Estás seguro de eliminar este libro?')) return
   try {
@@ -49,9 +54,14 @@ const deleteBook = async (id) => {
     showNotification('❌ Error al eliminar el libro', 'error')
   }
 }
+
 const addBook = (book) => {
   books.value.unshift(book)
-  showModal.value = false
+}
+
+const updateBook = (book) => {
+  const idx = books.value.findIndex(b => b.id === book.id)
+  if (idx !== -1) books.value[idx] = book
 }
 
 // MODAL & MENU
@@ -178,7 +188,14 @@ const showNotification = (message, type = 'success') => {
       </div>
     </main>
 
-    <BookForm v-if="showModal" @close="showModal = false" @added="addBook" />
+    <BookForm
+      v-if="showModal"
+      :book="editingBook"
+      @close="() => { showModal = false; editingBook = null }"
+      @added="addBook"
+      @updated="updateBook"
+    />
+
   </AuthenticatedLayout>
 
   <div v-if="notification.message" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow text-white z-50" :class="notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'">
