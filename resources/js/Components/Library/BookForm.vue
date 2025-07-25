@@ -29,7 +29,35 @@
 
         <div class="flex justify-end gap-4">
           <button @click.prevent="$emit('close')" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar</button>
+          <button
+            type="submit"
+            :disabled="isSubmitting"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center gap-2 min-w-[100px]"
+          >
+            <svg
+              v-if="isSubmitting"
+              class="animate-spin h-4 w-4 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <span>{{ isSubmitting ? 'Guardando...' : 'Guardar' }}</span>
+          </button>
+
         </div>
 
         <div v-if="form.file">
@@ -49,6 +77,7 @@ import PdfPreview from '@/Components/Library/PdfPreview.vue'
 
 const emit = defineEmits(['close', 'added', 'updated'])
 const props = defineProps({ book: Object })
+const isSubmitting = ref(false)
 
 const form = ref({
   title: '',
@@ -70,7 +99,10 @@ const handleFile = (e) => {
   form.value.file = e.target.files[0]
 }
 
-const submitForm = () => {
+const submitForm = async () => {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
   const formData = new FormData()
   formData.append('title', form.value.title)
   formData.append('author', form.value.author)
@@ -79,24 +111,21 @@ const submitForm = () => {
     formData.append('cover_base64', form.value.selected_thumbnail)
   }
 
-  if (props.book?.id) {
-    // Modo edición
-    axios.post(`/library/update/${props.book.id}`, formData)
-      .then((res) => {
-        emit('updated', res.data.book)
-        emit('close')
-      })
-      .catch((err) => console.error('Error al actualizar libro:', err))
-  } else {
-    // Modo creación
-    axios.post('/library/store', formData)
-      .then((res) => {
-        emit('added', res.data.book)
-        emit('close')
-      })
-      .catch((err) => console.error('Error al crear libro:', err))
+  const endpoint = props.book?.id
+    ? `/library/update/${props.book.id}`
+    : '/library/store'
+
+  try {
+    const res = await axios.post(endpoint, formData)
+    props.book?.id ? emit('updated', res.data.book) : emit('added', res.data.book)
+    emit('close')
+  } catch (err) {
+    console.error('Error al guardar el libro:', err)
+  } finally {
+    isSubmitting.value = false
   }
 }
+
 </script>
 
 
