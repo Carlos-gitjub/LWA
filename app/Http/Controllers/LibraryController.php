@@ -62,13 +62,15 @@ class LibraryController extends Controller
             Storage::disk('public')->put($filename, $imageData);
             $coverPath = $filename;
         }
-    
+
+        $author = trim($validated['author'] ?? '');
         $book = Book::create([
             'title' => $validated['title'],
-            'author' => $validated['author'] ?? null,
+            'author' => ($author === '' || strtolower($author) === 'null') ? null : $author,
             'file_path' => $path,
             'cover_path' => $coverPath,
         ]);
+
 
         try {
             $parser = new Parser();
@@ -256,7 +258,10 @@ class LibraryController extends Controller
         }
 
         $book->title = $validated['title'];
-        $book->author = $validated['author'] ?? null;
+        $author = trim($validated['author'] ?? '');
+        $book->author = ($author === '' || strtolower($author) === 'null') ? null : $author;
+
+
         $book->save();
 
         return response()->json(['book' => $book->fresh()]);

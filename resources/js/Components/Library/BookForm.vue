@@ -105,7 +105,7 @@ const submitForm = async () => {
 
   const formData = new FormData()
   formData.append('title', form.value.title)
-  formData.append('author', form.value.author)
+  formData.append('author', form.value.author?.trim() === '' ? '' : form.value.author)
   if (form.value.file) formData.append('file', form.value.file)
   if (form.value.selected_thumbnail) {
     formData.append('cover_base64', form.value.selected_thumbnail)

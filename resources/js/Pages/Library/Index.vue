@@ -175,9 +175,8 @@ const showNotification = (message, type = 'success') => {
       </div>
 
       <!-- TABLE VIEW -->
-    <!-- TABLE VIEW -->
-    <div v-else class="max-w-7xl mx-auto">
-      <table class="table-auto w-full border text-sm bg-white shadow rounded">
+      <div v-else class="max-w-7xl mx-auto">
+        <table class="table-auto w-full border text-sm bg-white shadow rounded">
           <thead class="bg-gray-100 text-left">
             <tr>
               <th class="p-3">Título</th>
