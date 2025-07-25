@@ -91,27 +91,41 @@ const showNotification = (message, type = 'success') => {
 <template>
   <AuthenticatedLayout>
     <main class="container mx-auto p-6">
-      <div class="flex justify-between items-center mb-6">
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Buscar por título o autor"
-          class="border p-2 rounded w-1/2"
-        />
+      <div class="flex flex-wrap justify-between items-center gap-4 mb-6 max-w-7xl mx-auto">
+        <!-- Buscador -->
+        <div class="flex-1 max-w-md">
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Buscar por título o autor"
+            class="border p-2 rounded w-full"
+          />
+        </div>
 
-        <div class="flex gap-2 mb-4">
-          <button @click="toggleView('cards')" :class="viewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'" class="p-2 rounded">
+
+        <!-- Toggle view -->
+        <div class="flex gap-2 justify-center">
+          <button
+            @click="toggleView('cards')"
+            :class="viewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="p-2 rounded"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h4v4H4V6zm6 0h4v4h-4V6zm6 0h4v4h-4V6zM4 14h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
             </svg>
           </button>
-          <button @click="toggleView('table')" :class="viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'" class="p-2 rounded">
+          <button
+            @click="toggleView('table')"
+            :class="viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+            class="p-2 rounded"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
 
+        <!-- Botones de acción -->
         <div class="flex gap-3">
           <button
             @click="showModal = true"
@@ -161,8 +175,9 @@ const showNotification = (message, type = 'success') => {
       </div>
 
       <!-- TABLE VIEW -->
-      <div v-else>
-        <table class="table-auto w-full border text-sm bg-white shadow rounded">
+    <!-- TABLE VIEW -->
+    <div v-else class="max-w-7xl mx-auto">
+      <table class="table-auto w-full border text-sm bg-white shadow rounded">
           <thead class="bg-gray-100 text-left">
             <tr>
               <th class="p-3">Título</th>
