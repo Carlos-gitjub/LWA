@@ -22,3 +22,16 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Terraform state files
+terraform/*.tfstate
+terraform/*.tfstate.backup
+
+# Terraform crash logs
+terraform/crash.log
+
+# Sensitive variable files
+terraform/terraform.tfvars
+terraform/.terraform/
+
+.cursor/
