@@ -43,3 +43,7 @@ resource "aws_security_group" "laravel_sg" {
     }
   ]
 }
+
+output "ec2_public_ip" {
+  value = aws_instance.app.public_ip
+}
