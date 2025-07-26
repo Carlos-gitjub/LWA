@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "app" {
-  ami           = "ami-0c55b159cbfafe1f0" # Ubuntu 22.04 (update if needed)
+  ami           = "ami-0043735dd4439caed" # Ubuntu 22.04 (update if needed)
   instance_type = "t2.micro"
 
   user_data = file("setup.sh")
