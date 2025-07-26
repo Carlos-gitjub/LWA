@@ -10,7 +10,7 @@ newgrp docker
 
 # Clone your Laravel repo
 cd /home/ubuntu
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git clone https://github.com/Carlos-gitjub/LWA.git
 cd YOUR_REPO
 
 # Ensure SQLite DB exists and writable
