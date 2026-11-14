@@ -14,7 +14,8 @@ for interactive operations that return JSON.
 This document describes the implemented architecture. Authentication and
 profile management still follow Laravel's conventional controllers, requests,
 and Eloquent model structure; they have not been organized into the same
-explicit use-case boundaries as Movies and Library.
+explicit use-case boundaries as Movies 
+and Library.
 
 ## Structure and responsibilities
 
