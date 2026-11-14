@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="findmoviebytitle" name="FindMovieByTitle">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1250" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="actor" value="SubscriptionMost.vue&amp;#xa;searchMovie()" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="300" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="request" value="FindMovieRequest\nValidates title: required, string, max 255" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="80" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="controller" value="MoviesStreamingController\nsearchTmdbMovieTitle()" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="290" width="230" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="inputdata" value="FindMovieByTitleInputData\ntitle: string" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="80" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="inputboundary" value="«interface»\nFindMovieByTitleInputBoundary\nexecute(input)" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#d5e8d4;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="210" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="interactor" value="FindMovieByTitleInteractor\ntrim/check title → lookup → output" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="350" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="outputboundary" value="«interface»\nFindMovieByTitleOutputBoundary\npresent(output)" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#d5e8d4;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="520" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="outputdata" value="FindMovieByTitleOutputData\nmovie: ?MovieData" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="520" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="presenter" value="FindMovieByTitlePresenter\nformats label: Title (Year)" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="520" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="viewmodel" value="ViewModel\ndata: movie array or null" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="650" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="port" value="«interface» MovieLookup\nfindFirstByTitle(title)" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#d5e8d4;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="350" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="adapter" value="TmdbMovieLookup\nMaps first result to MovieData" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="990" y="350" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="client" value="TmdbApiClient\nGET /3/search/movie" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="990" y="500" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tmdb" value="TMDB API" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="990" y="650" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="errors" value="Errors: invalid title → 422\nProvider unavailable → 503\nNo match → JSON null" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="edge1" value="axios.post() / POST endpoint" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="actor" target="request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge2" value="validated input" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="request" target="controller">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3" value="build" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="controller" target="inputdata">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge4" value="execute" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="controller" target="inputboundary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge5" value="implemented by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="inputboundary" target="interactor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge6" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="interactor" target="port">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge7" value="implemented by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="port" target="adapter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge8" value="calls" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="adapter" target="client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge9" value="HTTP request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="client" target="tmdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge10" value="present" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="interactor" target="outputboundary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge11" value="implemented by" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="outputboundary" target="presenter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge12" value="reads" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="presenter" target="outputdata">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge13" value="builds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="presenter" target="viewmodel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge14" value="maps outcome" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;fontSize=10;" edge="1" parent="1" source="controller" target="errors">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

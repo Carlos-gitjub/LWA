@@ -5,8 +5,8 @@ use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\MoviesStreamingController;
-use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\Movies\MoviesStreamingController;
+use App\Http\Controllers\Library\LibraryController;
 
 // Public routes (no auth required)
 Route::get('/', function () {

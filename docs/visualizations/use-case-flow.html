@@ -1,0 +1,139 @@
+<div id="lwa-flow">
+  <div class="viz-controls">
+    <button class="btn btn-primary" type="button" data-action="play">Play request</button>
+    <button class="btn" type="button" data-action="back">Previous</button>
+    <button class="btn" type="button" data-action="next">Next</button>
+    <label class="form-check"><input class="form-check-input" type="checkbox" data-action="dependencies"><span class="form-check-label">Show structure: uses / implements</span></label>
+  </div>
+  <div class="lwa-caption" aria-live="polite"></div>
+  <svg class="lwa-diagram" role="img" aria-label="Animated book-content search through Vue, HTTP adapters, application interfaces, domain rules, infrastructure, and database"></svg>
+  <div class="text-small">Open arrow = uses · Hollow triangle = implements · Filled arrow = runtime flow. I = interface; DS = data structure.</div>
+</div>
+<style>
+#lwa-flow.standalone {max-width:1050px;margin:24px auto;font-family:system-ui,sans-serif;color-scheme:light dark;padding:0 12px;box-sizing:border-box}
+#lwa-flow.standalone .viz-controls {display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#lwa-flow.standalone button {font:inherit;padding:8px 14px;border:1px solid GrayText;border-radius:6px;background:ButtonFace;color:ButtonText}
+#lwa-flow.standalone label {display:flex;gap:6px;align-items:center}
+#lwa-flow.standalone .text-small {font-size:12px;margin-top:12px}
+#lwa-flow {color:var(--foreground, CanvasText);width:100%}
+#lwa-flow .lwa-caption {min-height:3.5em;margin:16px 0 4px;line-height:1.5}
+#lwa-flow .lwa-diagram {width:100%;display:block;overflow:visible}
+#lwa-flow .node {fill:var(--background, Canvas);stroke:var(--border, GrayText);stroke-width:1.2}
+#lwa-flow .node.port {stroke-dasharray:5 3}
+#lwa-flow .node.active {fill:color-mix(in srgb,var(--viz-series-1,var(--primary, Highlight)) 16%,var(--background, Canvas));stroke:var(--viz-series-1,var(--primary, Highlight));stroke-width:2.5}
+#lwa-flow .node.done {fill:color-mix(in srgb,var(--viz-series-1,var(--primary, Highlight)) 5%,var(--background, Canvas))}
+#lwa-flow .edge {fill:none;stroke:var(--border, GrayText);stroke-width:1.5}
+#lwa-flow .edge.active {stroke:var(--viz-series-1,var(--primary, Highlight));stroke-width:3}
+#lwa-flow .edge.dep {stroke:var(--muted-foreground, GrayText)}
+#lwa-flow text {fill:var(--foreground, CanvasText);font-family:inherit;font-size:12px}
+#lwa-flow .sub {fill:var(--muted-foreground, GrayText);font-size:11px}
+#lwa-flow .heading {font-size:12px;font-weight:650}
+#lwa-flow .lane {fill:color-mix(in srgb,var(--muted, ButtonFace) 38%,transparent)}
+#lwa-flow .packet {fill:var(--viz-series-1,var(--primary, Highlight));stroke:var(--background, Canvas);stroke-width:2}
+</style>
+<script>
+(() => {
+ const root=document.getElementById('lwa-flow'),svg=root.querySelector('svg'),caption=root.querySelector('.lwa-caption');
+ const play=root.querySelector('[data-action="play"]'),next=root.querySelector('[data-action="next"]'),back=root.querySelector('[data-action="back"]'),dep=root.querySelector('input');
+ if (!getComputedStyle(root).getPropertyValue('--background').trim()) root.classList.add('standalone');
+ const NS='http://www.w3.org/2000/svg';
+ const nodes=[
+ ['view','Vue view','Library/SearchEngine.vue',0,0],
+ ['controller','Controller','LibraryController::searchEngine',0,1],
+ ['presenter','Presenter','SearchBookContentsPresenter',0,4],
+ ['vm','View model · DS','Prepared results + total',0,5],
+ ['input','Input boundary · I','SearchBookContentsInputBoundary',1,0],
+ ['usecase','Use-case interactor','SearchBookContentsInteractor',1,1],
+ ['entity','Domain entity','BookPage::occurrences()',1,5],
+ ['output','Output boundary · I','SearchBookContentsOutputBoundary',1,4],
+ ['port','Data access interface · I','BookContentSearch',1,2],
+ ['adapter','Data access adapter','EloquentBookContentSearch',2,2],
+ ['db','Database','Book pages + books',2,3]
+ ];
+ const steps=[
+ ['view','controller','1 / 15 · Vue sends query + filters → route, authentication, and SearchBooksRequest validation → controller.'],
+ ['controller','input','2 / 15 · Controller creates SearchBookContentsInputData (DS) and calls execute() through the input boundary.'],
+ ['input','usecase','3 / 15 · The interactor implements the input boundary. It validates the filters and coordinates the search.'],
+ ['usecase','port','4 / 15 · Interactor calls BookContentSearch::search(). Its code knows only this application-owned interface.'],
+ ['port','adapter','5 / 15 · Laravel has supplied EloquentBookContentSearch as the interface implementation.'],
+ ['adapter','db','6 / 15 · The adapter runs the database query using Eloquent; database details stay outside the core.'],
+ ['db','adapter','7 / 15 · Matching book pages return to the adapter, which maps them into plain PageMatchData objects.'],
+ ['adapter','usecase','8 / 15 · Core data returns through the data access contract. The interactor removes duplicate pages.'],
+ ['usecase','entity','9 / 15 · For each page, the interactor asks the domain BookPage entity to count query occurrences.'],
+ ['entity','usecase','10 / 15 · The domain returns the count. The interactor assembles results and the total.'],
+ ['usecase','output','11 / 15 · Interactor passes SearchBookContentsOutputData (DS) to present() through the output boundary.'],
+ ['output','presenter','12 / 15 · SearchBookContentsPresenter implements the output boundary and formats the result.'],
+ ['presenter','vm','13 / 15 · Presenter stores the prepared response data in its ViewModel.'],
+ ['vm','controller','14 / 15 · The controller reads that same scoped presenter’s view model and creates the JSON response.'],
+ ['controller','view','15 / 15 · Vue receives the response and updates the displayed matches and total.']
+ ];
+ const dependencies=[['controller','input','uses'],['controller','presenter','uses'],['usecase','input','implements'],['usecase','port','uses'],['usecase','entity','uses'],['usecase','output','uses'],['adapter','port','implements'],['presenter','output','implements'],['presenter','vm','uses'],['view','vm','uses']];
+ let index=-1,running=false,timer=null,frame=null,positions={},pathNode=null;
+ const saved=window.openai?.widgetState?.privateContent;
+ if(saved && Number.isInteger(saved.step)) index=Math.max(-1,Math.min(14,saved.step));
+ dep.checked=saved?.dependencies ?? true;
+ function el(tag,attrs,parent=svg){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));parent.appendChild(e);return e;}
+ function text(x,y,value,cls){const t=el('text',{x,y,'text-anchor':'middle',class:cls||''});t.textContent=value;return t;}
+ function route(a,b){
+ const p=positions[a],q=positions[b],cx=n=>n.x+n.w/2,cy=n=>n.y+n.h/2;
+ const line=points=>points.map((v,i)=>(i?'L':'M')+v.join(',')).join(' ');
+ const wide=Math.abs(positions.view.x-positions.input.x)>10;
+ const key=a+'>'+b;
+ if(key==='view>vm'){const rail=p.x-20;return line([[p.x,cy(p)],[rail,cy(p)],[rail,cy(q)],[q.x,cy(q)]]);}
+ if(!wide&&Math.abs(p.y-q.y)>130){const slot=Math.max(0,steps.findIndex(s=>s[0]===a&&s[1]===b));const offset=slot*2.4-17,rail=p.x+p.w+7+slot*1.25;return line([[p.x+p.w,cy(p)+offset],[rail,cy(p)+offset],[rail,cy(q)+offset],[q.x+q.w,cy(q)+offset]]);}
+ if(wide){
+  if(key==='controller>input')return line([[p.x+p.w,cy(p)-12],[q.x-22,cy(p)-12],[q.x-22,cy(q)],[q.x,cy(q)]]);
+  if(key==='adapter>usecase')return line([[cx(p),p.y],[cx(p),cy(q)],[q.x+q.w,cy(q)]]);
+  if(key==='usecase>output')return line([[p.x,cy(p)+12],[p.x-10,cy(p)+12],[p.x-10,q.y-16],[cx(q),q.y-16],[cx(q),q.y]]);
+  if(key==='usecase>entity'||key==='entity>usecase'){
+   const returning=a==='entity',rail=p.x+p.w+(returning?28:14),offset=returning?-12:12;
+   return line([[p.x+p.w,cy(p)+offset],[rail,cy(p)+offset],[rail,cy(q)+offset],[q.x+q.w,cy(q)+offset]]);
+  }
+ }
+ if(key==='vm>controller'||key==='controller>presenter'){
+  const rail=Math.min(p.x,q.x)-(key==='vm>controller'?20:9),offset=key==='vm>controller'?12:-12;
+  return line([[p.x,cy(p)+offset],[rail,cy(p)+offset],[rail,cy(q)+offset],[q.x,cy(q)+offset]]);
+ }
+ if(Math.abs(p.x-q.x)<10){
+  const direction=Math.sign(q.y-p.y),opposite=steps.some(s=>s[0]===b&&s[1]===a),offset=opposite?(direction>0?-9:9):0;
+  if(Math.abs(q.y-p.y)>130){const rail=p.x+p.w+14+(direction<0?10:0);return line([[p.x+p.w,cy(p)],[rail,cy(p)],[rail,cy(q)],[q.x+q.w,cy(q)]]);}
+  return line([[cx(p)+offset,p.y+(direction>0?p.h:0)],[cx(q)+offset,q.y+(direction>0?0:q.h)]]);
+ }
+ const direction=Math.sign(q.x-p.x),x1=p.x+(direction>0?p.w:0),x2=q.x+(direction>0?0:q.w),mid=(x1+x2)/2;
+ return line([[x1,cy(p)],[mid,cy(p)],[mid,cy(q)],[x2,cy(q)]]);
+ }
+ function draw(animate=false){cancelAnimationFrame(frame);svg.replaceChildren();positions={};
+ const width=Math.max(280,root.clientWidth),wide=width>=680;
+ const gap=wide?44:0,w=wide?(width-2*gap-48)/3:Math.min(width-60,360),h=62;
+ const labels=['HTTP / presentation','Application · core','Infrastructure'];
+ let height=wide?650:1290;
+ svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=height+'px';
+ const defs=el('defs',{});const marker=el('marker',{id:'lwa-arrow',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:5,markerHeight:5,orient:'auto-start-reverse'},defs);el('path',{d:'M0 0 L10 5 L0 10 z',fill:'var(--muted-foreground, GrayText)'},marker);
+ for(const [id,shape,fill] of [['uses','M1 1 L9 5 L1 9','none'],['implements','M1 1 L9 5 L1 9 Z','var(--background, Canvas)']]){
+  const m=el('marker',{id:'lwa-'+id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:9,markerHeight:9,orient:'auto',markerUnits:'userSpaceOnUse'},defs);
+  el('path',{d:shape,fill,stroke:'var(--muted-foreground, GrayText)','stroke-width':1.3,'stroke-linejoin':'round'},m);
+ }
+ if(wide){labels.forEach((label,c)=>{const x=24+c*(w+gap);el('rect',{x:x-5,y:8,width:w+10,height:height-20,rx:6,class:'lane'});text(x+w/2,30,label,'heading');});}
+ const order=['view','controller','input','usecase','port','adapter','db','entity','output','presenter','vm'];
+ nodes.forEach(n=>{const x=wide?24+n[3]*(w+gap):(width-w)/2,y=wide?56+n[4]*94:35+order.indexOf(n[0])*110;positions[n[0]]={x,y,w,h};});
+ if(wide){const p=positions.entity;el('rect',{x:p.x-4,y:p.y-24,width:p.w+8,height:p.h+30,rx:6,class:'lane'});text(p.x+p.w/2,p.y-9,'Domain · independent of application','heading');}
+ if(!wide)text(width/2,16,'Book-content search · runtime / dependencies','heading');
+ const active=dep.checked?null:steps[index];
+ const pairs=dep.checked?dependencies:steps.map(s=>[s[0],s[1]]);
+ pairs.forEach(pair=>{const isActive=active&&pair[0]===active[0]&&pair[1]===active[1];el('path',{d:route(...pair),fill:'none',stroke:'var(--background, Canvas)','stroke-width':5});const p=el('path',{d:route(...pair),class:'edge'+(dep.checked?' dep':'')+(isActive?' active':''),'marker-end':dep.checked?'url(#lwa-'+pair[2]+')':'url(#lwa-arrow)','data-tooltip':dep.checked?nodes.find(n=>n[0]===pair[0])[1]+' '+pair[2]+' '+nodes.find(n=>n[0]===pair[1])[1]:''});if(isActive)pathNode=p;if(dep.checked&&pair[0]==='view'&&pair[1]==='vm'){const box=positions.view,target=positions.vm;const t=text(box.x-12,(box.y+target.y+box.h)/2,'uses data via JSON','sub');t.setAttribute('transform',`rotate(-90 ${box.x-12} ${(box.y+target.y+box.h)/2})`);t.setAttribute('paint-order','stroke');t.setAttribute('stroke','var(--background, Canvas)');t.setAttribute('stroke-width',3);}});
+ nodes.forEach(n=>{const p=positions[n[0]],isActive=active&&(n[0]===active[0]||n[0]===active[1]);el('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:7,class:'node'+(['input','output','port'].includes(n[0])?' port':'')+(isActive?' active':'')});text(p.x+w/2,p.y+24,n[1]);
+ const label=n[2],max=Math.floor((w-12)/5.7);if(label.length>max&&label.includes('SearchBookContents')){text(p.x+w/2,p.y+40,'SearchBookContents','sub');text(p.x+w/2,p.y+54,label.replace('SearchBookContents',''),'sub');}else if(label.length>max&&label.includes('::')){const parts=label.split('::');text(p.x+w/2,p.y+40,parts[0],'sub');text(p.x+w/2,p.y+54,parts[1]+'()','sub');}else text(p.x+w/2,p.y+45,label,'sub');});
+ caption.textContent=dep.checked?'Structure · Uses points to a referenced type; implements points from a concrete class to its interface. Runtime call direction is shown separately.':active?active[2]:'Book-content search · All connections shown. Play request or Next highlights each step.';
+ back.disabled=dep.checked||index<0;next.disabled=dep.checked||index>=14;play.disabled=dep.checked;play.textContent=running?'Pause':index===14?'Replay request':'Play request';
+ if(animate&&!dep.checked&&pathNode&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const dot=el('circle',{r:5,class:'packet'}),length=pathNode.getTotalLength(),start=performance.now(),path=pathNode;
+ const tick=now=>{const progress=Math.min(1,(now-start)/850),p=path.getPointAtLength(length*progress);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);if(progress<1)frame=requestAnimationFrame(tick);else dot.remove();};frame=requestAnimationFrame(tick);}
+ }
+ function save(){window.openai?.setWidgetState?.({modelContent:{useCase:'SearchBookContents',step:index+1,showDependencies:dep.checked},privateContent:{step:index,dependencies:dep.checked}})?.catch(()=>{});}
+ function stop(){running=false;clearTimeout(timer);}
+ function advance(){if(index>=14){stop();draw();return;}index++;draw(true);save();if(running)timer=setTimeout(advance,2100);}
+ play.addEventListener('click',()=>{if(running){stop();draw();}else{if(index===14)index=-1;running=true;advance();}});
+ next.addEventListener('click',()=>{stop();advance();});back.addEventListener('click',()=>{stop();index--;draw(true);save();});dep.addEventListener('change',()=>{stop();draw();save();});
+ window.addEventListener('openai:set_globals',event=>{const state=event.detail?.globals?.widgetState?.privateContent;if(state){stop();index=Number.isInteger(state.step)?Math.max(-1,Math.min(14,state.step)):-1;dep.checked=Boolean(state.dependencies);draw();}});
+ new ResizeObserver(()=>draw()).observe(root);draw();
+})();
+</script>
