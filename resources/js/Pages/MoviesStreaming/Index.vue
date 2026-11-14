@@ -12,14 +12,7 @@ const results = ref([])
 const loading = ref(false)
 const error = ref(null)
 
-const label = (type) => {
-  switch (type) {
-    case 'sub': return 'Subscription'
-    case 'rent': return 'Rental'
-    case 'buy': return 'Purchase'
-    default: return type
-  }
-}
+
 
 
 const searchMovie = async () => {
@@ -36,7 +29,7 @@ const searchMovie = async () => {
     })
     results.value = response.data
   } catch (err) {
-    error.value = 'Error fetching movie data.'
+    error.value = err.response?.data?.message ?? 'Could not complete the operation. Please try again.'
     console.error(err)
   } finally {
     loading.value = false
@@ -100,7 +93,7 @@ const searchMovie = async () => {
             <div class="flex-1 font-semibold">{{ platform.platform }}</div>
 
             <div class="flex-1 text-sm text-gray-700">
-              {{ label(platform.type) }} • {{ platform.format }}
+              {{ platform.typeLabel }} • {{ platform.format }}
             </div>
 
             <div class="flex-1 text-sm">

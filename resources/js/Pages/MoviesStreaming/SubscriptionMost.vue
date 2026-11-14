@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import axios from 'axios'
 import { Link } from '@inertiajs/vue3'
 import RegionSelector from '@/Components/MoviesStreaming/RegionSelector.vue'
@@ -10,11 +10,22 @@ const searchResult = ref(null)
 const movieList = ref([])
 const error = ref(null)
 const region = ref('ES')
-const platformResults = ref({})
-const isAnalyzed = ref(false)
+const platformResults = ref([])
 const isSearching = ref(false)
-const isAnalyzing = ref(false)
+const analysisState = ref('idle')
 const openPlatforms = ref({})
+const analysisError = ref(null)
+let selectionVersion = 0
+
+const isAnalyzed = computed(() => ['success', 'empty'].includes(analysisState.value))
+const isAnalyzing = computed(() => analysisState.value === 'analyzing')
+
+watch([movieList, region], () => {
+  selectionVersion++
+  platformResults.value = []
+  analysisState.value = 'idle'
+  analysisError.value = null
+}, { deep: true, flush: 'sync' })
 
 const searchMovie = async () => {
   if (!search.value.trim()) return
@@ -34,7 +45,7 @@ const searchMovie = async () => {
     }
   } catch (e) {
     console.error(e)
-    error.value = 'Error searching movie.'
+    error.value = e.response?.data?.message ?? 'Error searching movie.'
   } finally {
     isSearching.value = false
   }
@@ -57,19 +68,29 @@ const removeMovie = (index) => {
 }
 
 const analyzePlatforms = async () => {
-  isAnalyzing.value = true
+  const version = selectionVersion
+  analysisState.value = 'analyzing'
+  analysisError.value = null
+  platformResults.value = []
   try {
     const response = await axios.post('/movies-streaming/advanced/subscription-most/analyze', {
       movies: movieList.value,
       region: region.value
     })
 
-    platformResults.value = response.data
-    isAnalyzed.value = true
+    if (version === selectionVersion) {
+      platformResults.value = response.data
+      analysisState.value = response.data.length ? 'success' : 'empty'
+    }
   } catch (e) {
-    console.error('Error analyzing platforms:', e)
+    if (version === selectionVersion) {
+      analysisError.value = e.response?.data?.message ?? 'Could not complete the analysis. Please try again.'
+      analysisState.value = 'error'
+    }
   } finally {
-    isAnalyzing.value = false
+    if (version === selectionVersion && analysisState.value === 'analyzing') {
+      analysisState.value = 'idle'
+    }
   }
 }
 
@@ -145,13 +166,20 @@ const togglePlatform = (platform) => {
 
             </div>
 
+            <p v-if="error" role="alert" class="text-red-600">{{ error }}</p>
+            <p v-if="analysisState === 'error'" role="alert" class="text-red-600">{{ analysisError }}</p>
+            <p v-if="analysisState === 'empty'" class="text-gray-600">
+              No subscription platforms found for this selection.
+            </p>
+            <p v-if="movieList.length >= 30" class="text-gray-600">Maximum 30 movies.</p>
+
             <!-- Search result -->
             <div
               v-if="searchResult"
               class="mb-4 bg-white p-4 rounded border shadow-sm flex justify-between items-center text-sm"
             >
               <div>
-                🎬 <strong>{{ searchResult.title }}</strong> ({{ searchResult.year }})
+                🎬 <strong>{{ searchResult.label }}</strong>
               </div>
               <button
                 @click="addMovie"
@@ -168,7 +196,7 @@ const togglePlatform = (platform) => {
                 :key="index"
                 class="bg-white border-l-4 border-blue-500 px-4 py-1 shadow-sm rounded text-sm flex justify-between items-center"
               >
-                <span>🎬 <strong>{{ movie.title }}</strong> ({{ movie.year }})</span>
+                <span>🎬 <strong>{{ movie.label }}</strong></span>
                 <button
                   @click="removeMovie(index)"
                   class="text-red-500 hover:text-red-700 text-xs px-2"
@@ -184,7 +212,7 @@ const togglePlatform = (platform) => {
 
         <!-- RIGHT: Results -->
         <div
-          v-if="Object.keys(platformResults).length"
+          v-if="platformResults.length"
           class="transition-all duration-500 w-full md:w-1/2"
         >
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
@@ -192,19 +220,19 @@ const togglePlatform = (platform) => {
           </h2>
 
           <div
-            v-for="(data, platform) in platformResults"
-            :key="platform"
+            v-for="data in platformResults"
+            :key="data.id"
             class="bg-white rounded border shadow mb-2"
           >
             <!-- Header as dropdown toggle -->
             <button
-              @click="togglePlatform(platform)"
+              @click="togglePlatform(data.id)"
               class="w-full flex justify-between items-center px-4 py-3 text-left text-blue-700 font-bold hover:bg-gray-50 transition"
             >
-              <span>{{ platform }} ({{ data.count }} titles)</span>
+              <span>{{ data.name }} ({{ data.count }} titles)</span>
               <span>
                 <svg
-                  :class="{ 'rotate-180': openPlatforms[platform] }"
+                  :class="{ 'rotate-180': openPlatforms[data.id] }"
                   class="h-4 w-4 transform transition-transform duration-300"
                   fill="none"
                   stroke="currentColor"
@@ -219,7 +247,7 @@ const togglePlatform = (platform) => {
             <!-- Dropdown content -->
             <transition name="fade">
               <ul
-                v-if="openPlatforms[platform]"
+                v-if="openPlatforms[data.id]"
                 class="list-disc pl-8 pr-4 pb-3 text-gray-700"
               >
                 <li v-for="(movie, index) in data.movies" :key="index">
